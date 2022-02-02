@@ -14,27 +14,34 @@
 #include <stdlib.h>
 
 using namespace std;
-
-#define N0  2
-#define N1  4
-#define N2  2
+N3=N2
+#define N0  784
+#define N1  1000
+#define N2  500
+#define N3  10
 
 #define DEBUG 1
 #define HEIGHT 28
 #define WIDTH 28
 
-double IN[N0];
-double W0[N0][N1];
-double B1[N1];
-double HS[N1];
-double HO[N1];
+double IN[N0]; // Input Layer
+double W0[N0][N1]; //Input to hidden layer1
+double B1[N1]; 
+double HS_1[N1];
+double HO_1[N1];
+
 double W1[N1][N2];
 double B2[N2];
-double OS[N2];
-double OO[N2];
+double HS_2[N2]; //2nd hidden layer sum
+double HO_2[N2]; //2nd hidden layer output
+
+double W2[N2][N3];
+double B3[N3];
+double OS[N3];
+double OO[N3];
 
 double err;
-double rate = 0.1;
+double rate = 0.1; //Learning Rate
 
 double sigmoid(double x)
 {
@@ -69,26 +76,43 @@ void forward(double *input)
 
         // compute the weighted sum HS in the hidden layer
         for (int i=0; i<N1; i++) {
-		HS[i] = B1[i];
+		HS_1[i] = B1[i];
 	}
         for (int i=0; i<N1; i++) {
 		for (int j=0; j<N0; j++)
-			HS[i] += IN[j]*W0[j][i];
+			HS_1[i] += IN[j]*W0[j][i];
 	}
-
+        
         // Comput the output of the hidden layer, HO[N1];
 
         for (int i=0; i<N1; i++) {
-		HO[i] = sigmoid(HS[i]);
+		HO_1[i] = sigmoid(HS_1[i]);
 	}
+
+        // compute the weighted sum HS in the hidden layer
+        for (int i=0; i<N2; i++) {
+		HS_2[i] = B2[i];
+	}
+        for (int i=0; i<N2; i++) {
+		for (int j=0; j<N1; j++)
+			HS_2[i] += HO_1[j]*W1[j][i];
+	}
+        
+        // Comput the output of the hidden layer, HO[N1];
+
+        for (int i=0; i<N2; i++) {
+		HO_2[i] = sigmoid(HS_2[i]);
+	}
+
+
 
         // compute the weighted sum OS in the output layer
         for (int i=0; i<N2; i++) {
 		OS[i] = B2[i];
 	}
-        for (int i=0; i<N2; i++) {
-		for (int j=0; j<N1; j++)
-			OS[i] += HO[j]*W1[j][i];
+        for (int i=0; i<N3; i++) {
+		for (int j=0; j<N2; j++)
+			OS[i] += HO_2[j]*W2[j][i];
 	}
 
         // Comput the output of the output layer, OO[N2];
