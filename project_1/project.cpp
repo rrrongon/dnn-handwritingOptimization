@@ -19,6 +19,10 @@ using namespace std;
 #define N1  4
 #define N2  2
 
+#define DEBUG 1
+#define HEIGHT 28
+#define WIDTH 28
+
 double IN[N0];
 double W0[N0][N1];
 double B1[N1];
@@ -46,6 +50,14 @@ double scaled_tanh(double x)
 	result = A * tanh(B * x);
 
 	return result;
+}
+
+void flatten_convert_2D(*input){
+	for (int i=0; i < HEIGHT; i++){ 
+		for (int j =0; j< WIDTH; j++){
+ 			scale_input[i * WIDTH + j] = (input[i][j] / 127.5) - 10; //(Scale PI acc to formula PI/127.5 - 10)
+		}
+ 	} 
 }
 
 // forward progagation with input: input[N0]
