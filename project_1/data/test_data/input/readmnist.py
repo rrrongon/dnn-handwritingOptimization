@@ -1,14 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# converter_mnist.py
-
-import numpy as np
-import matplotlib.pyplot as plt
-
 
 def convert(img_file, label_file, txt_file, n_images):
-  print("\nOpening binary pixels and labels files ")
   lbl_f = open(label_file, "rb")   # labels (digits)
   img_f = open(img_file, "rb")     # pixel values
   print("Opening destination text file ")
