@@ -122,14 +122,22 @@ void forward(double *input)
 	}
 }
 
-double dE_OO[N2];
-double dOO_OS[N2];
-double dE_OS[N2];
+double dE_OO[N3];
+double dOO_OS[N3];
+double dE_OS[N3];
+double dE_B3[N3];
+double dE_W2[N2][N3];
+
+
+double dE_HO_2[N2];
+double dHO_HS_2[N2];
+double dE_HS_2[N2];
 double dE_B2[N2];
 double dE_W1[N1][N2];
-double dE_HO[N1];
-double dHO_HS[N1];
-double dE_HS[N1];
+
+double dE_HO_1[N1];
+double dHO_HS_1[N1];
+double dE_HS_1[N1];
 double dE_B1[N1];
 double dE_W0[N0][N1];
 
@@ -160,20 +168,20 @@ double backward(double *O, double *Y)
 {
         // compute error
 	err = 0.0;
-        for (int i=0; i<N2; i++) 
+        for (int i=0; i<N3; i++) 
 		err += (O[i] - Y[i])*(O[i]-Y[i]);
-	err = err / N2;
+	err = err / N3;
 
         // compute dE_OO
-        for (int i=0; i<N2; i++) 
-		dE_OO[i] = (O[i] - Y[i])*2.0/N2;
+        for (int i=0; i<N3; i++) 
+		dE_OO[i] = (O[i] - Y[i])*2.0/N3;
 
         // compute dOO_OS = OO dot (1-OO)
-        for (int i=0; i<N2; i++)
+        for (int i=0; i<N3; i++)
 		dOO_OS[i] = OO[i] * (1.0-OO[i]);
 
         // compute dE_OS = dE_OO dot dOO_OS
-        for (int i=0; i<N2; i++)
+        for (int i=0; i<N3; i++)
 		dE_OS[i] = dE_OO[i] * dOO_OS[i];
 
         // compute dE_B2 = dE_OS
