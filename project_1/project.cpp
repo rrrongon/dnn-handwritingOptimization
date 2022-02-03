@@ -43,10 +43,6 @@ double OO[N3];
 double err;
 double rate = 0.1; //Learning Rate
 
-double sigmoid(double x)
-{
-	return 1/(1+exp(-x));
-}
 
 double scaled_tanh(double x)
 {
@@ -86,7 +82,7 @@ void forward(double *input)
         // Comput the output of the hidden layer, HO[N1];
 
         for (int i=0; i<N1; i++) {
-		HO_1[i] = sigmoid(HS_1[i]);
+		HO_1[i] = scaled_tanh(HS_1[i]);
 	}
 
         // compute the weighted sum HS in the hidden layer
@@ -101,14 +97,14 @@ void forward(double *input)
         // Comput the output of the hidden layer, HO[N1];
 
         for (int i=0; i<N2; i++) {
-		HO_2[i] = sigmoid(HS_2[i]);
+		HO_2[i] = scaled_tanh(HS_2[i]);
 	}
 
 
 
         // compute the weighted sum OS in the output layer
-        for (int i=0; i<N2; i++) {
-		OS[i] = B2[i];
+        for (int i=0; i<N3; i++) {
+		OS[i] = B3[i];
 	}
         for (int i=0; i<N3; i++) {
 		for (int j=0; j<N2; j++)
@@ -117,8 +113,8 @@ void forward(double *input)
 
         // Comput the output of the output layer, OO[N2];
 
-        for (int i=0; i<N2; i++) {
-		OO[i] = sigmoid(OS[i]);
+        for (int i=0; i<N3; i++) {
+		OO[i] = scaled_tanh(OS[i]);
 	}
 }
 
@@ -164,10 +160,14 @@ void print_12(double a[N1][N2], const char* aa)
 }
 
 // 
+
 double backward(double *O, double *Y)
 {
         // compute error
+	double A = 1.7159;
+	double B = 0.6666;
 	err = 0.0;
+
         for (int i=0; i<N3; i++) 
 		err += (O[i] - Y[i])*(O[i]-Y[i]);
 	err = err / N3;
@@ -178,44 +178,75 @@ double backward(double *O, double *Y)
 
         // compute dOO_OS = OO dot (1-OO)
         for (int i=0; i<N3; i++)
-		dOO_OS[i] = OO[i] * (1.0-OO[i]);
+		//OO[i] = AtanH(Bx)
+		//
+		// A * B (1 - (tanh(Bx) * tanh(Bx)))
+		//B * (A - (A * tanhx(Bx) * tanhx(Bx)))
+		//B * (A - OO[i] * OO[i])
+		dOO_OS[i] = B * (A - (A * OO[i] * OO[i])); //A * B (1 - (tanh(Bx) * tanh(Bx)))
 
         // compute dE_OS = dE_OO dot dOO_OS
         for (int i=0; i<N3; i++)
 		dE_OS[i] = dE_OO[i] * dOO_OS[i];
 
-        // compute dE_B2 = dE_OS
+        // compute dE_B3 = dE_OS
+        for (int i=0; i<N3; i++)
+		dE_B3[i] = dE_OS[i];
+
+        // compute dE_W2
         for (int i=0; i<N2; i++)
-		dE_B2[i] = dE_OS[i];
+		for (int j = 0; j<N3; j++) 
+			dE_W2[i][j] = dE_OS[j]*HO_2[i];
+
+	// compute dE_HO_2
+	for (int i=0; i<N2; i++) {
+		dE_HO_2[i] = 0;
+		for (int j = 0; j<N3; j++)
+			dE_HO_2[i] += dE_OS[j]*W2[i][j];
+	}
+
+        // compute dHO_HS_2 = HO_2 dot (1-HO_2)
+        for (int i=0; i<N2; i++)
+		dHO_HS_2[i] = B * (A - (A * HO_2[i] *HO_2[i]));
+
+        // compute dE_HS_2 = dE_HO_2 dot dHO_HS_2
+        for (int i=0; i<N2; i++)
+		dE_HS_2[i] = dE_HO_2[i] * dHO_HS_2[i];
+
+        // compute dE_B2 = dE_HS_2
+        for (int i=0; i<N2; i++)
+		dE_B2[i] = dE_HS_2[i];
+
+////////////////////////////////
 
         // compute dE_W1
         for (int i=0; i<N1; i++)
 		for (int j = 0; j<N2; j++) 
-			dE_W1[i][j] = dE_OS[j]*HO[i];
+			dE_W1[i][j] = dE_HS_2[j]*HO_1[i];
 
-	// compute dE_HO
+	// compute dE_HO_1
 	for (int i=0; i<N1; i++) {
-		dE_HO[i] = 0;
+		dE_HO_1[i] = 0;
 		for (int j = 0; j<N2; j++)
-			dE_HO[i] += dE_OS[j]*W1[i][j];
+			dE_HO_1[i] += dE_HS_2[j]*W1[i][j];
 	}
 
-        // compute dHO_HS = HO dot (1-HO)
+        // compute dHO_HS_1 = HO_1 dot (1-HO_1)
         for (int i=0; i<N1; i++)
-		dHO_HS[i] = HO[i] * (1-HO[i]);
+		dHO_HS_1[i] = B * (A - (A * HO_1[i] *HO_1[i]));
 
-        // compute dE_HS = dE_HO dot dHO_HS
+        // compute dE_HS_1 = dE_HO_1 dot dHO_HS_1
         for (int i=0; i<N1; i++)
-		dE_HS[i] = dE_HO[i] * dHO_HS[i];
+		dE_HS_1[i] = dE_HO_1[i] * dHO_HS_1[i];
 
-        // compute dE_B1 = dE_HS
+        // compute dE_B1 = dE_HS_1
         for (int i=0; i<N1; i++)
-		dE_B1[i] = dE_HS[i];
-
+		dE_B1[i] = dE_HS_1[i];
+////////////////////////////////
         // compute dE_W0
         for (int i=0; i<N0; i++)
 		for (int j = 0; j<N1; j++) 
-			dE_W0[i][j] = dE_HS[j]*IN[i];
+			dE_W0[i][j] = dE_HS_1[j]*IN[i];
 	/*
 	cout << "err = " << err << "\n";
 	print_1d(IN, N0, "IN");
@@ -229,7 +260,7 @@ double backward(double *O, double *Y)
         print_01(dE_W0, "dE_W0");
 	*/
 
-        // update W0, W1, B1, B2;
+        // update W0, W1, W2, B1, B2, B3;
 
 	for (int i=0; i<N0; i++)
 		for (int j=0; j<N1; j++)
@@ -244,8 +275,17 @@ double backward(double *O, double *Y)
 
 	for (int i=0; i<N2; i++)
 		B2[i] = B2[i] - rate * dE_B2[i];
+	
+
+	for (int i=0; i<N2; i++)
+		for (int j=0; j<N3; j++)
+			W2[i][j] = W2[i][j] - rate * dE_W2[i][j];
+
+	for (int i=0; i<N3; i++)
+		B3[i] = B3[i] - rate * dE_B3[i];
 
 }  
+
 
 double X[4][2] = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
 double Y[4][2] = {{0.0, 0.0}, {0.0, 1.0}, {0.0, 1.0}, {1.0, 0.0}};
