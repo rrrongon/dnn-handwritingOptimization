@@ -13,12 +13,14 @@
 #include <iostream>
 #include <math.h> 
 #include <stdlib.h>
+#include <random>
+#include <fstream>
+#include <vector>
 
 using namespace std;
-N3=N2
 #define N0  784
-#define N1  1000
-#define N2  500
+#define N1  1
+#define N2  2
 #define N3  10
 
 #define DEBUG 1
@@ -41,6 +43,15 @@ double B3[N3];
 double OS[N3];
 double OO[N3];
 
+
+typedef unsigned char uchar;
+vector<vector <double> >  data_X;
+vector<vector <double> >  data_Y;
+
+
+
+
+
 double err;
 double rate = 0.1; //Learning Rate
 
@@ -55,19 +66,19 @@ double scaled_tanh(double x)
 
 	return result;
 }
-
-void flatten_convert_2D(*input){
+/*
+void flatten_convert_2D(void * input){
 	for (int i=0; i < HEIGHT; i++){ 
 		for (int j =0; j< WIDTH; j++){
  			scale_input[i * WIDTH + j] = (input[i][j] / 127.5) - 10; //(Scale PI acc to formula PI/127.5 - 10)
 		}
  	} 
 }
+*/
 //////
-Read Image
+//Read Image
 
-typedef unsigned char uchar;
-uchar** read_mnist_images(string full_path, int& number_of_images, int& image_size) {
+void read_mnist_images(string full_path, int& number_of_images, int& image_size) {
     auto reverseInt = [](int i) {
         unsigned char c1, c2, c3, c4;
         c1 = i & 255, c2 = (i >> 8) & 255, c3 = (i >> 16) & 255, c4 = (i >> 24) & 255;
@@ -107,6 +118,15 @@ uchar** read_mnist_images(string full_path, int& number_of_images, int& image_si
 	[0 1 2 .....60000]
 
 	**/
+	vector<double> temp;
+        for(int ii=0; ii < number_of_images; ii++){
+		for(int jj=0; jj < image_size; jj++){
+			temp.push_back( (double(_dataset[ii][jj]) / 127.5) - 10 ); //Scale (input[i][j] / 127.5) - 10
+		}
+		data_X.push_back(temp);
+		temp.clear();
+	}
+	/* For Display
         for(int ii=0; ii < number_of_images; ii++){
 		for(int jj=0; jj < image_size; jj++){
 			if (jj % 28 == 0){
@@ -121,25 +141,20 @@ uchar** read_mnist_images(string full_path, int& number_of_images, int& image_si
 		}
 		cout << endl;
 	}
-        return _dataset;
+	*/
     } else {
         throw runtime_error("Cannot open file `" + full_path + "`!");
     }
 }
 
 
-int main(){
-	int number_of_images = 0, size = 0;
-	read_mnist_images("/Users/saptarshibhowmik/Documents/CDA_5125/project_1/data/train_data/input/train-images-idx3-ubyte", number_of_images, size);
-}
 ///////
 
 /////
 
-Read Label
+//Read Label
 
-typedef unsigned char uchar;
-uchar* read_mnist_labels(string full_path, int& number_of_labels) {
+void read_mnist_labels(string full_path, int& number_of_labels) {
     auto reverseInt = [](int i) {
         unsigned char c1, c2, c3, c4;
         c1 = i & 255, c2 = (i >> 8) & 255, c3 = (i >> 16) & 255, c4 = (i >> 24) & 255;
@@ -163,23 +178,20 @@ uchar* read_mnist_labels(string full_path, int& number_of_labels) {
         for(int i = 0; i < number_of_labels; i++) {
             file.read((char*)&_dataset[i], 1);
         }
+ 	vector<double> temp(10, 0.0);
 	for (int ii = 0; ii < number_of_labels; ii++){
-		cout << (int)_dataset[ii] << endl;
+		temp[(int)_dataset[ii]] = 1.0;
+		data_Y.push_back(temp);
+		temp[(int)_dataset[ii]] = 0.0;
 	} 
-        return _dataset;
     } else {
         throw runtime_error("Unable to open file `" + full_path + "`!");
     }
 }
 
-int main(){
-	int number_of_labels = 0;
-	read_mnist_labels("/Users/saptarshibhowmik/Documents/CDA_5125/project_1/data/train_data/output/train-labels-idx1-ubyte", number_of_labels);
-}
-/////
 
 // forward progagation with input: input[N0]
-void forward(double *input)
+void forward(vector<double> input)
 {
 
         for (int i = 0; i<N0; i++) 
@@ -276,7 +288,7 @@ void print_12(double a[N1][N2], const char* aa)
 
 // 
 
-double backward(double *O, double *Y)
+double backward(double *O, vector<double> Y)
 {
         // compute error
 	double A = 1.7159;
@@ -357,12 +369,12 @@ double backward(double *O, double *Y)
         // compute dE_B1 = dE_HS_1
         for (int i=0; i<N1; i++)
 		dE_B1[i] = dE_HS_1[i];
-////////////////////////////////
-        // compute dE_W0
+        
+	// compute dE_W0
         for (int i=0; i<N0; i++)
 		for (int j = 0; j<N1; j++) 
 			dE_W0[i][j] = dE_HS_1[j]*IN[i];
-	/*
+	
 	cout << "err = " << err << "\n";
 	print_1d(IN, N0, "IN");
 	print_1d(dE_OO, N2, "dE_OO");
@@ -373,7 +385,7 @@ double backward(double *O, double *Y)
         print_12(dE_W1, "dE_W1");
         print_1d(dE_B1, N1, "dE_B1");
         print_01(dE_W0, "dE_W0");
-	*/
+	
 
         // update W0, W1, W2, B1, B2, B3;
 
@@ -402,20 +414,22 @@ double backward(double *O, double *Y)
 }  
 
 
-double X[4][2] = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
-double Y[4][2] = {{0.0, 0.0}, {0.0, 1.0}, {0.0, 1.0}, {1.0, 0.0}};
+//double X[4][2] = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
+//double Y[4][2] = {{0.0, 0.0}, {0.0, 1.0}, {0.0, 1.0}, {1.0, 0.0}};
 //double Y[4][2] = {{0.0, 0.0}, {1.0, 1.0}, {1.0, 1.0}, {0.0, 0.0}};
 	
 void train(int iter)
 {
 	for (int i = 0; i< iter; i++) {
-		//int ii = random () % 4;
-		int ii = i % 4;
+		//int ii = random () % data_X.size();
+		int ii = i % data_X.size();
                 //int ii= 3;
-		forward(&(X[ii][0]));
-		backward(OO, &(Y[ii][0]));
+		forward(data_X[ii]);
+	        cout <<"Iter : " << i << "FORWARD PROPAGATION" << endl;	
+		backward(OO, data_Y[ii]);
+	        cout <<"Iter : " << i << "BACKWARD PROPAGATION" << endl;	
 
-		if (i % 10000 == 0) 
+		if (i % 10 == 0) 
 			cout << "Iter " << i << ": err =" << err << "\n";
 		// break;
 	}
@@ -423,25 +437,79 @@ void train(int iter)
 
 int main(int argc, char *argv[]) 
 {
+
+
+	int number_of_images = 0, size = 0;
+	read_mnist_images("/Users/saptarshibhowmik/Documents/CDA_5125/project_1/data/train_data/input/train-images-idx3-ubyte", number_of_images, size);
+	cout << "IMAGE READ COMPLETE" << endl;	
+	
+
+	int number_of_labels = 0;
+	read_mnist_labels("/users/saptarshibhowmik/documents/cda_5125/project_1/data/train_data/output/train-labels-idx1-ubyte", number_of_labels);
+		
+
+
+	cout << "LABEL READ COMPLETE" << endl;
+        /*
+	for (int i = 0; i < data_X.size(); i++){
+		for (int j = 0; j < data_X[i].size(); j++){
+			if (j % 28 == 0)
+				cout << endl;
+			double mm =  (data_X[i][j]+10)*127.5;
+			if (mm == 0.0){
+				cout << ".";
+			}
+			else{
+				cout << "@";
+			}
+		}
+		cout << endl;
+		cout << "Label : ";
+		for (int k = 0; k < data_Y[i].size(); k++){
+			cout << data_Y[i][k] << "\t";
+		}
+		cout << endl;
+	}*/
 	// randomize weights
+	int seed = 30;
+	default_random_engine generator(seed); // rd() provides a random seed
+	uniform_real_distribution<double> distribution(-0.05, 0.05);
+
         for (int i = 0; i<N1; i++)
-		B1[i] = random()*1.0/RAND_MAX;
+		B1[i] = distribution(generator);
         for (int i = 0; i<N0; i++)
 		for (int j = 0; j<N1; j++)
-			W0[i][j] = random()*1.0/RAND_MAX;
+			W0[i][j] = distribution(generator);
         for (int i = 0; i<N2; i++)
-		B2[i] = random()*1.0/RAND_MAX;
+		B2[i] = distribution(generator);
         for (int i = 0; i<N1; i++)
 		for (int j = 0; j<N2; j++)
-			W1[i][j] = random()*1.0/RAND_MAX;
+			W1[i][j] = distribution(generator);
 			
+	cout << "WEIGHT DISTRIBUTION COMPLETE" << endl;	
 
 	if (argc == 2) train(atoi(argv[1]));
-        else train(100000);
+        else train(10);
 
 	//        cout << "w1 = " << w1 << ", w2 = " << w2 << ", b = " << b << "\n";
-
-        forward(X[0]);
+        int m = 4;
+        forward(data_X[m]);
+	for (int j = 0; j < data_X[m].size(); j++){
+			if (j % 28 == 0)
+				cout << endl;
+			double mm =  (data_X[m][j]+10)*127.5;
+			if (mm == 0.0){
+				cout << ".";
+			}
+			else{
+				cout << "@";
+			}
+		}
+	cout << endl;
+        for (int i = 0; i < 10; i++){
+		cout << OO[i] << "\t";
+	} 
+/*
 	cout << "(0, 0) -> " << "(" << OO[0] << ", " << OO[1]  << ")\n";
         forward(X[1]);
 	cout << "(0, 1) -> " << "(" << OO[0] << ", " << OO[1]  << ")\n";
@@ -449,4 +517,5 @@ int main(int argc, char *argv[])
 	cout << "(1, 0) -> " << "(" << OO[0] << ", " << OO[1]  << ")\n";
         forward(X[3]);
 	cout << "(1, 1) -> " << "(" << OO[0] << ", " << OO[1]  << ")\n";
+*/
 }

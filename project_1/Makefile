@@ -1,9 +1,13 @@
 CC=gcc
 CFLAGS=-I.
-DEPS = hellomake.h
+CXX = g++
+CXXFLAGS = --std=c++11 -Wall
 
-%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+%.o: %.cpp 
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
-hellomake: hellomake.o hellofunc.o 
-	$(CC) -o hellomake hellomake.o hellofunc.o 
+project1.x: project1.o
+	$(CXX) -o project1.x project1.o
+
+clean:
+	rm -rf *.o *.x
