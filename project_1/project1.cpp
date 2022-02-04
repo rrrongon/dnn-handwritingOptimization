@@ -75,8 +75,7 @@ void flatten_convert_2D(void * input){
  	} 
 }
 */
-//////
-//Read Image
+////////////////////////////////Read Image//////////////////////////////////////
 
 void read_mnist_images(string full_path, int& number_of_images, int& image_size) {
     auto reverseInt = [](int i) {
@@ -148,11 +147,8 @@ void read_mnist_images(string full_path, int& number_of_images, int& image_size)
 }
 
 
-///////
 
-/////
-
-//Read Label
+//////////////////////////Read Label//////////////////////////////
 
 void read_mnist_labels(string full_path, int& number_of_labels) {
     auto reverseInt = [](int i) {
@@ -207,7 +203,6 @@ void forward(vector<double> input)
 	}
         
         // Comput the output of the hidden layer, HO[N1];
-
         for (int i=0; i<N1; i++) {
 		HO_1[i] = scaled_tanh(HS_1[i]);
 	}
@@ -222,12 +217,9 @@ void forward(vector<double> input)
 	}
         
         // Comput the output of the hidden layer, HO[N1];
-
         for (int i=0; i<N2; i++) {
 		HO_2[i] = scaled_tanh(HS_2[i]);
 	}
-
-
 
         // compute the weighted sum OS in the output layer
         for (int i=0; i<N3; i++) {
@@ -239,7 +231,6 @@ void forward(vector<double> input)
 	}
 
         // Comput the output of the output layer, OO[N2];
-
         for (int i=0; i<N3; i++) {
 		OO[i] = scaled_tanh(OS[i]);
 	}
@@ -286,7 +277,6 @@ void print_12(double a[N1][N2], const char* aa)
 			     << "]=" << a[i][j]<< "\n";
 }
 
-// 
 
 double backward(double *O, vector<double> Y)
 {
@@ -308,9 +298,10 @@ double backward(double *O, vector<double> Y)
 		//OO[i] = AtanH(Bx)
 		//
 		// A * B (1 - (tanh(Bx) * tanh(Bx)))
-		//B * (A - (A * tanhx(Bx) * tanhx(Bx)))
-		//B * (A - OO[i] * OO[i])
-		dOO_OS[i] = B * (A - (A * OO[i] * OO[i])); //A * B (1 - (tanh(Bx) * tanh(Bx)))
+		// B * (A - (A * tanhx(Bx) * tanhx(Bx)))
+		// B * (A - OO[i] * OO[i])
+		// A * B (1 - (tanh(Bx) * tanh(Bx)))
+		dOO_OS[i] = B * (A - (OO[i] * OO[i] / A)); //A * B (1 - (tanh(Bx) * tanh(Bx)))
 
         // compute dE_OS = dE_OO dot dOO_OS
         for (int i=0; i<N3; i++)
@@ -334,7 +325,7 @@ double backward(double *O, vector<double> Y)
 
         // compute dHO_HS_2 = HO_2 dot (1-HO_2)
         for (int i=0; i<N2; i++)
-		dHO_HS_2[i] = B * (A - (A * HO_2[i] *HO_2[i]));
+		dHO_HS_2[i] = B * (A - (HO_2[i] * HO_2[i] / A));
 
         // compute dE_HS_2 = dE_HO_2 dot dHO_HS_2
         for (int i=0; i<N2; i++)
@@ -360,7 +351,7 @@ double backward(double *O, vector<double> Y)
 
         // compute dHO_HS_1 = HO_1 dot (1-HO_1)
         for (int i=0; i<N1; i++)
-		dHO_HS_1[i] = B * (A - (A * HO_1[i] *HO_1[i]));
+		dHO_HS_1[i] = B * (A - (HO_1[i] * HO_1[i] / A));
 
         // compute dE_HS_1 = dE_HO_1 dot dHO_HS_1
         for (int i=0; i<N1; i++)
@@ -435,22 +426,48 @@ void train(int iter)
 	}
 }
 
+void test(vector<double> data){
+        forward(data);
+	for (int j = 0; j < data.size(); j++){
+			if (j % 28 == 0)
+				cout << endl;
+			double mm =  (data[j]+10)*127.5;
+			if (mm == 0.0){
+				cout << ".";
+			}
+			else{
+				cout << "@";
+			}
+		}
+	cout << endl;
+        for (int i = 0; i < 10; i++){
+		cout << OO[i] << "\t";
+	}
+	cout << endl;
+} 
+
 int main(int argc, char *argv[]) 
 {
 
 
 	int number_of_images = 0, size = 0;
-	read_mnist_images("/Users/saptarshibhowmik/Documents/CDA_5125/project_1/data/train_data/input/train-images-idx3-ubyte", number_of_images, size);
+	read_mnist_images("./data/train_data/input/train-images-idx3-ubyte", number_of_images, size);
 	cout << "IMAGE READ COMPLETE" << endl;	
 	
 
 	int number_of_labels = 0;
-	read_mnist_labels("/users/saptarshibhowmik/documents/cda_5125/project_1/data/train_data/output/train-labels-idx1-ubyte", number_of_labels);
-		
-
-
+	read_mnist_labels("./data/train_data/output/train-labels-idx1-ubyte", number_of_labels);
 	cout << "LABEL READ COMPLETE" << endl;
+
+
+
+
         /*
+	*
+	*	
+	*	Print The Image Data
+	*	
+	*
 	for (int i = 0; i < data_X.size(); i++){
 		for (int j = 0; j < data_X[i].size(); j++){
 			if (j % 28 == 0)
@@ -469,12 +486,17 @@ int main(int argc, char *argv[])
 			cout << data_Y[i][k] << "\t";
 		}
 		cout << endl;
-	}*/
+	}
+	*
+	*
+	*
+	*
+	*/
+	
 	// randomize weights
 	int seed = 30;
 	default_random_engine generator(seed); // rd() provides a random seed
 	uniform_real_distribution<double> distribution(-0.05, 0.05);
-
         for (int i = 0; i<N1; i++)
 		B1[i] = distribution(generator);
         for (int i = 0; i<N0; i++)
@@ -484,32 +506,24 @@ int main(int argc, char *argv[])
 		B2[i] = distribution(generator);
         for (int i = 0; i<N1; i++)
 		for (int j = 0; j<N2; j++)
-			W1[i][j] = distribution(generator);
-			
+			W1[i][j] = distribution(generator);		
 	cout << "WEIGHT DISTRIBUTION COMPLETE" << endl;	
+
+
 
 	if (argc == 2) train(atoi(argv[1]));
         else train(10);
 
 	//        cout << "w1 = " << w1 << ", w2 = " << w2 << ", b = " << b << "\n";
-        int m = 4;
-        forward(data_X[m]);
-	for (int j = 0; j < data_X[m].size(); j++){
-			if (j % 28 == 0)
-				cout << endl;
-			double mm =  (data_X[m][j]+10)*127.5;
-			if (mm == 0.0){
-				cout << ".";
-			}
-			else{
-				cout << "@";
-			}
-		}
-	cout << endl;
-        for (int i = 0; i < 10; i++){
-		cout << OO[i] << "\t";
-	} 
-/*
+        
+//	cout << "w1 = " << w1 << ", w2 = " << w2 <<  ", w3 = " << w3 << "\n";
+
+	/* For Testing */
+	int m = 4;
+	test(data_X[m]);
+
+
+	/*
 	cout << "(0, 0) -> " << "(" << OO[0] << ", " << OO[1]  << ")\n";
         forward(X[1]);
 	cout << "(0, 1) -> " << "(" << OO[0] << ", " << OO[1]  << ")\n";
