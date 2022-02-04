@@ -16,11 +16,12 @@
 #include <random>
 #include <fstream>
 #include <vector>
+#include <stdexcept>
 
 using namespace std;
 #define N0  784
-#define N1  1
-#define N2  2
+#define N1  1000
+#define N2  500
 #define N3  10
 
 #define DEBUG 1
@@ -53,7 +54,7 @@ vector<vector <double> >  data_Y;
 
 
 double err;
-double rate = 0.1; //Learning Rate
+double rate = 0.0001; //Learning Rate
 
 
 double scaled_tanh(double x)
@@ -366,8 +367,8 @@ double backward(double *O, vector<double> Y)
 		for (int j = 0; j<N1; j++) 
 			dE_W0[i][j] = dE_HS_1[j]*IN[i];
 	
-	cout << "err = " << err << "\n";
-	print_1d(IN, N0, "IN");
+	//cout << "err = " << err << "\n";
+	/*print_1d(IN, N0, "IN");
 	print_1d(dE_OO, N2, "dE_OO");
 	print_1d(dOO_OS, N2, "dOO_OS");
 	print_1d(OO, N2, "OO");
@@ -375,7 +376,7 @@ double backward(double *O, vector<double> Y)
         print_1d(dE_B2, N2, "dE_B2");
         print_12(dE_W1, "dE_W1");
         print_1d(dE_B1, N1, "dE_B1");
-        print_01(dE_W0, "dE_W0");
+        print_01(dE_W0, "dE_W0");*/
 	
 
         // update W0, W1, W2, B1, B2, B3;
@@ -416,11 +417,11 @@ void train(int iter)
 		int ii = i % data_X.size();
                 //int ii= 3;
 		forward(data_X[ii]);
-	        cout <<"Iter : " << i << "FORWARD PROPAGATION" << endl;	
+	        //cout <<"Iter : " << i << "FORWARD PROPAGATION" << endl;	
 		backward(OO, data_Y[ii]);
-	        cout <<"Iter : " << i << "BACKWARD PROPAGATION" << endl;	
+	        //cout <<"Iter : " << i << "BACKWARD PROPAGATION" << endl;	
 
-		if (i % 10 == 0) 
+		if (i % 100000 == 0) 
 			cout << "Iter " << i << ": err =" << err << "\n";
 		// break;
 	}
@@ -512,7 +513,7 @@ int main(int argc, char *argv[])
 
 
 	if (argc == 2) train(atoi(argv[1]));
-        else train(10);
+        else train(7000000);
 
 	//        cout << "w1 = " << w1 << ", w2 = " << w2 << ", b = " << b << "\n";
         
