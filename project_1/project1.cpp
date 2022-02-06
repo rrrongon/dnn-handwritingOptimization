@@ -54,7 +54,7 @@ vector<vector <double> >  data_Y;
 
 
 double err;
-double rate = 0.00001; //Learning Rate
+double rate = 0.001; //Learning Rate
 
 
 double scaled_tanh(double x)
@@ -425,8 +425,8 @@ void train(int iter)
 	for (int kk = 0; kk < iter; kk++) {
 		
 		ii = kk % data_X.size();
-		forward(data_X[kk]);
-		backward(OO, data_Y[kk]);
+		forward(data_X[ii]);
+		backward(OO, data_Y[ii]);
 	        
 
 		if (kk % 10000 == 0) {
@@ -456,8 +456,8 @@ void train(int iter)
 		}
 			
 		if ( kk % 50000 == 0) {
-			cout << "Learning rate changed from " << rate << " to " << rate/(double) constant << "\n";
-			rate = rate / (double) constant;
+			cout << "Learning rate changed from " << rate << " to " << rate * (double) constant << "\n";
+			rate = rate * (double) constant;
 		}
 	}
 }
@@ -548,7 +548,7 @@ int main(int argc, char *argv[])
 
 
 	if (argc == 2) train(atoi(argv[1]));
-        else train(7000000);
+        else train(700000);
 
 	//        cout << "w1 = " << w1 << ", w2 = " << w2 << ", b = " << b << "\n";
         
