@@ -54,7 +54,7 @@ vector<vector <double> >  data_Y;
 
 
 double err;
-double rate = 0.0001; //Learning Rate
+double rate = 0.00001; //Learning Rate
 
 
 double scaled_tanh(double x)
@@ -410,20 +410,55 @@ double backward(double *O, vector<double> Y)
 //double Y[4][2] = {{0.0, 0.0}, {0.0, 1.0}, {0.0, 1.0}, {1.0, 0.0}};
 //double Y[4][2] = {{0.0, 0.0}, {1.0, 1.0}, {1.0, 1.0}, {0.0, 0.0}};
 	
+
 void train(int iter)
 {
-	for (int i = 0; i< iter; i++) {
-		//int ii = random () % data_X.size();
-		int ii = i % data_X.size();
-                //int ii= 3;
-		forward(data_X[ii]);
-	        //cout <<"Iter : " << i << "FORWARD PROPAGATION" << endl;	
-		backward(OO, data_Y[ii]);
-	        //cout <<"Iter : " << i << "BACKWARD PROPAGATION" << endl;	
+	
+	time_t t; // t passed as argument in function time()
+   	struct tm * tt; // decalring variable for localtime()
+   	time (&t); //passing argument to time()
+   	tt = localtime(&t);
 
-		if (i % 100000 == 0) 
-			cout << "Iter " << i << ": err =" << err << "\n";
-		// break;
+	int ii,jj;
+	int i = 0;
+        double constant = 1.5;
+	for (int kk = 0; kk < iter; kk++) {
+		
+		ii = kk % data_X.size();
+		forward(data_X[kk]);
+		backward(OO, data_Y[kk]);
+	        
+
+		if (kk % 10000 == 0) {
+
+			int winner = 0;
+			double max = OO[0];
+
+			for (int i = 0; i < N3; i++){
+				if (data_Y[ii][i] ) {
+					jj = i;
+				}
+			}
+			for (int i = 0; i < N3; i++){
+				if (OO[i] > max) {
+					max = OO[i];
+					winner = i;
+				}
+			} 
+
+			cout << "[Train] Iter " << kk << ": err =" << err << ", Y = " << jj <<"\n";			
+			for (int i = 0; i < N3; i++)
+				cout << "OO[" <<i<< "] = " << OO[i] << "\n";
+			
+			cout << "Max OO["<<winner<<"] VS " << "Y = " << jj<<"\n";
+			time (&t);
+			cout << asctime(localtime(&t)) << "\n";
+		}
+			
+		if ( kk % 50000 == 0) {
+			cout << "Learning rate changed from " << rate << " to " << rate/(double) constant << "\n";
+			rate = rate / (double) constant;
+		}
 	}
 }
 
