@@ -456,8 +456,10 @@ void train(int iter)
 		}
 			
 		if ( kk % 50000 == 0) {
-			cout << "Learning rate changed from " << rate << " to " << rate * (double) constant << "\n";
-			rate = rate * (double) constant;
+			if (rate < 0.01){
+				cout << "Learning rate changed from " << rate << " to " << rate * (double) constant << "\n";
+				rate = rate * (double) constant;
+			}
 		}
 	}
 }
@@ -533,16 +535,24 @@ int main(int argc, char *argv[])
 	int seed = 30;
 	default_random_engine generator(seed); // rd() provides a random seed
 	uniform_real_distribution<double> distribution(-0.05, 0.05);
-        for (int i = 0; i<N1; i++)
+        
+	for (int i = 0; i<N1; i++)
 		B1[i] = distribution(generator);
         for (int i = 0; i<N0; i++)
 		for (int j = 0; j<N1; j++)
 			W0[i][j] = distribution(generator);
-        for (int i = 0; i<N2; i++)
+        
+	for (int i = 0; i<N2; i++)
 		B2[i] = distribution(generator);
         for (int i = 0; i<N1; i++)
 		for (int j = 0; j<N2; j++)
 			W1[i][j] = distribution(generator);		
+        
+	for (int i = 0; i<N3; i++)
+		B3[i] = distribution(generator);
+        for (int i = 0; i<N2; i++)
+		for (int j = 0; j<N3; j++)
+			W2[i][j] = distribution(generator);		
 	cout << "WEIGHT DISTRIBUTION COMPLETE" << endl;	
 
 
