@@ -418,7 +418,8 @@ void train(int iter)
    	struct tm * tt; // decalring variable for localtime()
    	time (&t); //passing argument to time()
    	tt = localtime(&t);
-
+	ofstream myfile;
+	myfile.open ("output.txt");
 	int ii,jj;
 	int i = 0;
         double constant = 1.5;
@@ -446,22 +447,24 @@ void train(int iter)
 				}
 			} 
 
-			cout << "[Train] Iter " << kk << ": err =" << err << ", Y = " << jj <<"\n";			
+			myfile << "[Train] Iter " << kk << ": err =" << err << ", Y = " << jj <<"\n";			
 			for (int i = 0; i < N3; i++)
-				cout << "OO[" <<i<< "] = " << OO[i] << "\n";
+				myfile << "OO[" <<i<< "] = " << OO[i] << "\n";
 			
-			cout << "Max OO["<<winner<<"] VS " << "Y = " << jj<<"\n";
+			myfile << "Max OO["<<winner<<"] VS " << "Y = " << jj<<"\n";
 			time (&t);
-			cout << asctime(localtime(&t)) << "\n";
+			myfile << asctime(localtime(&t)) << "\n";
+			cout << "Done" << endl;
+			myfile.flush();
 		}
-			
 		if ( kk % 50000 == 0) {
 			if (rate < 0.01){
-				cout << "Learning rate changed from " << rate << " to " << rate * (double) constant << "\n";
+				myfile << "Learning rate changed from " << rate << " to " << rate * (double) constant << "\n";
 				rate = rate * (double) constant;
 			}
 		}
 	}
+	myfile.close();
 }
 
 void test(vector<double> data){
