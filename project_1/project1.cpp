@@ -454,13 +454,13 @@ void train(int iter)
 			myfile << "Max OO["<<winner<<"] VS " << "Y = " << jj<<"\n";
 			time (&t);
 			myfile << asctime(localtime(&t)) << "\n";
-			cout << "Done" << endl;
 			myfile.flush();
 		}
 		if ( kk % 50000 == 0) {
 			if (rate < 0.01){
 				myfile << "Learning rate changed from " << rate << " to " << rate * (double) constant << "\n";
 				rate = rate * (double) constant;
+				myfile.flush();
 			}
 		}
 	}
