@@ -419,7 +419,7 @@ void train(int iter)
    	time (&t); //passing argument to time()
    	tt = localtime(&t);
 	ofstream myfile;
-	myfile.open ("output.txt");
+	myfile.open ("output_3_6_400.txt");
 	int ii,jj;
 	int i = 0;
         double constant = 1.5;
@@ -457,9 +457,9 @@ void train(int iter)
 			myfile.flush();
 		}
 		if ( kk % 50000 == 0) {
-			if (rate < 0.01){
-				myfile << "Learning rate changed from " << rate << " to " << rate * (double) constant << "\n";
-				rate = rate * (double) constant;
+			if (rate > 0.000001){
+				myfile << "Learning rate changed from " << rate << " to " << rate / (double) constant << "\n";
+				rate = rate / (double) constant;
 				myfile.flush();
 			}
 		}
@@ -561,7 +561,7 @@ int main(int argc, char *argv[])
 
 
 	if (argc == 2) train(atoi(argv[1]));
-        else train(700000);
+        else train(2500000);
 
 	//        cout << "w1 = " << w1 << ", w2 = " << w2 << ", b = " << b << "\n";
         
