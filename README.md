@@ -58,11 +58,14 @@ Mon Feb  7 22:04:44 2022</br>
     - >make `[This should compile project1.cpp file and generate project1.o and project1.x]`
     - ><i>./project1.x    50000  `[ this will run program for 50000 interattion. Default 700000. You can pass any number as iteration count.]`</i> 
     - Output: output.txt
+
 - MNIST data placement
     ![Screenshot](data_tree.png)
-    - Put mnist data inside <i>data</i> folder
+    - Create a folder <i>project_1/data</i> under project_1 directory.
+    - Put mnist zip data inside <i>data</i> folder
+    - Extract or put training data and testing data folder inside data folder shown in image.
     - Upon unzip train and test folder should be there.
-    - Currently, with this package we have integrated mnist data.
+    - We look for data as `./data/train_data/input/train-images-idx3-ubyte`
 
 - How program achieves high accuracy [ Explanation and calculation of accuracy]
     - Our program is still running. We are yet to reach in any conclusion.
