@@ -17,6 +17,7 @@
 #include <fstream>
 #include <vector>
 #include <stdexcept>
+#include <chrono>
 
 using namespace std;
 #define N0  784
@@ -198,11 +199,23 @@ void forward(vector<double> input)
         for (int i=0; i<N1; i++) {
 		HS_1[i] = B1[i];
 	}
-        for (int i=0; i<N1; i++) {
-		for (int j=0; j<N0; j++)
-			HS_1[i] += IN[j]*W0[j][i];
+
+	int bk = 8; //blocking
+	for (int j=0; j<N0; j+=bk){ //loop interchange
+		for (int i=0; i<N1; i+=bk){
+			for (int jj=j;jj<j+bk;jj++){
+				HS_1[i+0] += IN[jj]*W0[jj][i+0];
+				HS_1[i+1] += IN[jj]*W0[jj][i+1];
+				HS_1[i+2] += IN[jj]*W0[jj][i+2];
+				HS_1[i+3] += IN[jj]*W0[jj][i+3];
+				HS_1[i+4] += IN[jj]*W0[jj][i+4];
+				HS_1[i+5] += IN[jj]*W0[jj][i+5];
+				HS_1[i+6] += IN[jj]*W0[jj][i+6];
+				HS_1[i+7] += IN[jj]*W0[jj][i+7];
+			}	
+		}
 	}
-        
+
         // Comput the output of the hidden layer, HO[N1];
         for (int i=0; i<N1; i++) {
 		HO_1[i] = scaled_tanh(HS_1[i]);
@@ -212,11 +225,36 @@ void forward(vector<double> input)
         for (int i=0; i<N2; i++) {
 		HS_2[i] = B2[i];
 	}
-        for (int i=0; i<N2; i++) {
-		for (int j=0; j<N1; j++)
-			HS_2[i] += HO_1[j]*W1[j][i];
+
+	bk = 20;
+	for (int j=0; j<N1; j+=bk) {
+		for (int i=0; i<N2; i+=bk){
+			for (int jj=j;jj<j+bk;jj++){
+				HS_2[i+0] += HO_1[jj]* W1[jj][i+0];
+				HS_2[i+1] += HO_1[jj]* W1[jj][i+1];
+				HS_2[i+2] += HO_1[jj]* W1[jj][i+2];
+				HS_2[i+3] += HO_1[jj]* W1[jj][i+3];
+				HS_2[i+4] += HO_1[jj]* W1[jj][i+4];
+				HS_2[i+5] += HO_1[jj]* W1[jj][i+5];
+				HS_2[i+6] += HO_1[jj]* W1[jj][i+6];
+				HS_2[i+7] += HO_1[jj]* W1[jj][i+7];
+				HS_2[i+8] += HO_1[jj]* W1[jj][i+8];
+				HS_2[i+9] += HO_1[jj]* W1[jj][i+9];
+				HS_2[i+10] += HO_1[jj]* W1[jj][i+10];
+				HS_2[i+11] += HO_1[jj]* W1[jj][i+11];
+				HS_2[i+12] += HO_1[jj]* W1[jj][i+12];
+				HS_2[i+13] += HO_1[jj]* W1[jj][i+13];
+				HS_2[i+14] += HO_1[jj]* W1[jj][i+14];
+				HS_2[i+15] += HO_1[jj]* W1[jj][i+15];
+				HS_2[i+16] += HO_1[jj]* W1[jj][i+16];
+				HS_2[i+17] += HO_1[jj]* W1[jj][i+17];
+				HS_2[i+18] += HO_1[jj]* W1[jj][i+18];
+				HS_2[i+19] += HO_1[jj]* W1[jj][i+19];
+			}
+				
+		}
 	}
-        
+ 
         // Comput the output of the hidden layer, HO[N1];
         for (int i=0; i<N2; i++) {
 		HO_2[i] = scaled_tanh(HS_2[i]);
@@ -226,9 +264,22 @@ void forward(vector<double> input)
         for (int i=0; i<N3; i++) {
 		OS[i] = B3[i];
 	}
-        for (int i=0; i<N3; i++) {
-		for (int j=0; j<N2; j++)
-			OS[i] += HO_2[j]*W2[j][i];
+
+	bk = 10;
+        for (int j=0; j<N2; j+=bk) {
+		for (int i=0; i<N3; i+=bk)
+			for(int jj=j; jj< j+bk; jj++){
+				OS[i+0] += HO_2[jj]*W2[jj][i+0];
+				OS[i+1] += HO_2[jj]*W2[jj][i+1];
+				OS[i+2] += HO_2[jj]*W2[jj][i+2];
+				OS[i+3] += HO_2[jj]*W2[jj][i+3];
+				OS[i+4] += HO_2[jj]*W2[jj][i+4];
+				OS[i+5] += HO_2[jj]*W2[jj][i+5];
+				OS[i+6] += HO_2[jj]*W2[jj][i+6];
+				OS[i+7] += HO_2[jj]*W2[jj][i+7];
+				OS[i+8] += HO_2[jj]*W2[jj][i+8];
+				OS[i+9] += HO_2[jj]*W2[jj][i+9];
+			}
 	}
 
         // Comput the output of the output layer, OO[N2];
@@ -290,39 +341,31 @@ double backward(double *O, vector<double> Y)
 		err += (O[i] - Y[i])*(O[i]-Y[i]);
 	err = err / N3;
 
-        // compute dE_OO
-        for (int i=0; i<N3; i++) 
-		dE_OO[i] = (O[i] - Y[i])*2.0/N3;
+	double temp_OOi;
+        for (int i=0; i<N3; i++){
+		/*OO[i] = AtanH(Bx)
+ * 		A * B (1 - (tanh(Bx) * tanh(Bx)))
+ * 		B * (A - (A * tanhx(Bx) * tanhx(Bx)))
+ * 		B * (A - OO[i] * OO[i])
+ * 		A * B (1 - (tanh(Bx) * tanh(Bx)))*/
 
-        // compute dOO_OS = OO dot (1-OO)
-        for (int i=0; i<N3; i++)
-		//OO[i] = AtanH(Bx)
-		//
-		// A * B (1 - (tanh(Bx) * tanh(Bx)))
-		// B * (A - (A * tanhx(Bx) * tanhx(Bx)))
-		// B * (A - OO[i] * OO[i])
-		// A * B (1 - (tanh(Bx) * tanh(Bx)))
-		dOO_OS[i] = B * (A - (OO[i] * OO[i] / A)); //A * B (1 - (tanh(Bx) * tanh(Bx)))
-
-        // compute dE_OS = dE_OO dot dOO_OS
-        for (int i=0; i<N3; i++)
+		dE_OO[i] = (O[i] - Y[i])*2.0/N3; //loop fusion
+		temp_OOi =  OO[i];
+		dOO_OS[i] = B * (A - (temp_OOi * temp_OOi / A)); //A * B (1 - (tanh(Bx) * tanh(Bx)))
 		dE_OS[i] = dE_OO[i] * dOO_OS[i];
-
-        // compute dE_B3 = dE_OS
-        for (int i=0; i<N3; i++)
 		dE_B3[i] = dE_OS[i];
+	}
 
-        // compute dE_W2
         for (int i=0; i<N2; i++)
 		for (int j = 0; j<N3; j++) 
 			dE_W2[i][j] = dE_OS[j]*HO_2[i];
 
-	// compute dE_HO_2
 	for (int i=0; i<N2; i++) {
 		dE_HO_2[i] = 0;
 		for (int j = 0; j<N3; j++)
 			dE_HO_2[i] += dE_OS[j]*W2[i][j];
 	}
+
 
         // compute dHO_HS_2 = HO_2 dot (1-HO_2)
         for (int i=0; i<N2; i++)
@@ -336,18 +379,69 @@ double backward(double *O, vector<double> Y)
         for (int i=0; i<N2; i++)
 		dE_B2[i] = dE_HS_2[i];
 
-////////////////////////////////
 
-        // compute dE_W1
-        for (int i=0; i<N1; i++)
-		for (int j = 0; j<N2; j++) 
-			dE_W1[i][j] = dE_HS_2[j]*HO_1[i];
+	int bk = 20;
+	for (int i=0; i<N1; i+=bk){
+		for (int j = 0; j<N2; j+=bk){
+			for(int ii=i; ii< i+bk; ii++){
+				dE_W1[ii][j+0] = dE_HS_2[j+0]*HO_1[ii];
+				dE_W1[ii][j+1] = dE_HS_2[j+1]*HO_1[ii];
+				dE_W1[ii][j+2] = dE_HS_2[j+2]*HO_1[ii];
+				dE_W1[ii][j+3] = dE_HS_2[j+3]*HO_1[ii];
+				dE_W1[ii][j+4] = dE_HS_2[j+4]*HO_1[ii];	
+				
+				dE_W1[ii][j+5] = dE_HS_2[j+5]*HO_1[ii];
+                                dE_W1[ii][j+6] = dE_HS_2[j+6]*HO_1[ii];
+                                dE_W1[ii][j+7] = dE_HS_2[j+7]*HO_1[ii];
+                                dE_W1[ii][j+8] = dE_HS_2[j+8]*HO_1[ii];
+                                dE_W1[ii][j+9] = dE_HS_2[j+9]*HO_1[ii];
+
+				dE_W1[ii][j+10] = dE_HS_2[j+10]*HO_1[ii];
+                                dE_W1[ii][j+11] = dE_HS_2[j+11]*HO_1[ii];
+                                dE_W1[ii][j+12] = dE_HS_2[j+12]*HO_1[ii];
+                                dE_W1[ii][j+13] = dE_HS_2[j+13]*HO_1[ii];
+                                dE_W1[ii][j+14] = dE_HS_2[j+14]*HO_1[ii];
+
+				dE_W1[ii][j+15] = dE_HS_2[j+15]*HO_1[ii];
+                                dE_W1[ii][j+16] = dE_HS_2[j+16]*HO_1[ii];
+                                dE_W1[ii][j+17] = dE_HS_2[j+17]*HO_1[ii];
+                                dE_W1[ii][j+18] = dE_HS_2[j+18]*HO_1[ii];
+                                dE_W1[ii][j+19] = dE_HS_2[j+19]*HO_1[ii];
+
+			}
+		}
+	}
 
 	// compute dE_HO_1
+	double temp_dE_HO_1;
+        bk=20;
 	for (int i=0; i<N1; i++) {
-		dE_HO_1[i] = 0;
-		for (int j = 0; j<N2; j++)
-			dE_HO_1[i] += dE_HS_2[j]*W1[i][j];
+		temp_dE_HO_1=0.0;
+		for (int j = 0; j<N2; j+=bk){
+				
+				temp_dE_HO_1 += dE_HS_2[j+0]*W1[i][j+0];
+				temp_dE_HO_1 += dE_HS_2[j+1]*W1[i][j+1];
+				temp_dE_HO_1 += dE_HS_2[j+2]*W1[i][j+2];
+				temp_dE_HO_1 += dE_HS_2[j+3]*W1[i][j+3];
+				temp_dE_HO_1 += dE_HS_2[j+4]*W1[i][j+4];
+				temp_dE_HO_1 += dE_HS_2[j+5]*W1[i][j+5];
+				temp_dE_HO_1 += dE_HS_2[j+6]*W1[i][j+6];
+				temp_dE_HO_1 += dE_HS_2[j+7]*W1[i][j+7];
+				temp_dE_HO_1 += dE_HS_2[j+8]*W1[i][j+8];
+				temp_dE_HO_1 += dE_HS_2[j+9]*W1[i][j+9];
+				temp_dE_HO_1 += dE_HS_2[j+10]*W1[i][j+10];
+				temp_dE_HO_1 += dE_HS_2[j+11]*W1[i][j+11];
+				temp_dE_HO_1 += dE_HS_2[j+12]*W1[i][j+12];
+				temp_dE_HO_1 += dE_HS_2[j+13]*W1[i][j+13];
+				temp_dE_HO_1 += dE_HS_2[j+14]*W1[i][j+14];
+				temp_dE_HO_1 += dE_HS_2[j+15]*W1[i][j+15];
+				temp_dE_HO_1 += dE_HS_2[j+16]*W1[i][j+16];
+				temp_dE_HO_1 += dE_HS_2[j+17]*W1[i][j+17];
+				temp_dE_HO_1 += dE_HS_2[j+18]*W1[i][j+18];
+				temp_dE_HO_1 += dE_HS_2[j+19]*W1[i][j+19];
+				
+		}
+		dE_HO_1[i] = temp_dE_HO_1;
 	}
 
         // compute dHO_HS_1 = HO_1 dot (1-HO_1)
@@ -362,40 +456,90 @@ double backward(double *O, vector<double> Y)
         for (int i=0; i<N1; i++)
 		dE_B1[i] = dE_HS_1[i];
         
-	// compute dE_W0
-        for (int i=0; i<N0; i++)
-		for (int j = 0; j<N1; j++) 
-			dE_W0[i][j] = dE_HS_1[j]*IN[i];
-	
-	//cout << "err = " << err << "\n";
-	/*print_1d(IN, N0, "IN");
-	print_1d(dE_OO, N2, "dE_OO");
-	print_1d(dOO_OS, N2, "dOO_OS");
-	print_1d(OO, N2, "OO");
-	print_1d(dE_OS, N2, "dE_OS");
-        print_1d(dE_B2, N2, "dE_B2");
-        print_12(dE_W1, "dE_W1");
-        print_1d(dE_B1, N1, "dE_B1");
-        print_01(dE_W0, "dE_W0");*/
-	
+	bk = 16;
+	for (int i=0; i<N0; i+=bk){
+			for (int j = 0; j<N1; j+=bk){
+				for(int ii=i; ii<i+bk; ii++){
+					dE_W0[ii][j+0] = dE_HS_1[j+0]*IN[ii];
+					dE_W0[ii][j+1] = dE_HS_1[j+1]*IN[ii];
+					dE_W0[ii][j+2] = dE_HS_1[j+2]*IN[ii];
+					dE_W0[ii][j+3] = dE_HS_1[j+3]*IN[ii];
 
+					dE_W0[ii][j+4] = dE_HS_1[j+4]*IN[ii];
+					dE_W0[ii][j+5] = dE_HS_1[j+5]*IN[ii];
+					dE_W0[ii][j+6] = dE_HS_1[j+6]*IN[ii];
+					dE_W0[ii][j+7] = dE_HS_1[j+7]*IN[ii];
+
+					dE_W0[ii][j+8] = dE_HS_1[j+8]*IN[ii];
+					dE_W0[ii][j+9] = dE_HS_1[j+9]*IN[ii];
+					dE_W0[ii][j+10] = dE_HS_1[j+10]*IN[ii];
+					dE_W0[ii][j+11] = dE_HS_1[j+11]*IN[ii];
+
+					dE_W0[ii][j+12] = dE_HS_1[j+12]*IN[ii];
+					dE_W0[ii][j+13] = dE_HS_1[j+13]*IN[ii];
+					dE_W0[ii][j+14] = dE_HS_1[j+14]*IN[ii];
+					dE_W0[ii][j+15] = dE_HS_1[j+15]*IN[ii];
+
+				}
+			}
+		}
+ 
         // update W0, W1, W2, B1, B2, B3;
 
-	for (int i=0; i<N0; i++)
-		for (int j=0; j<N1; j++)
-			W0[i][j] = W0[i][j] - rate * dE_W0[i][j];
+	bk=8;
+	for (int i=0; i<N0; i+=bk)
+                for (int j=0; j<N1; j+=bk)
+			for(int ii=i; ii< i+bk; ii++){
+                        	W0[ii][j+0] = W0[ii][j+0] - rate * dE_W0[ii][j+0];
+				 W0[ii][j+1] = W0[ii][j+1] - rate * dE_W0[ii][j+1];
+				 W0[ii][j+2] = W0[ii][j+2] - rate * dE_W0[ii][j+2];
+				 W0[ii][j+3] = W0[ii][j+3] - rate * dE_W0[ii][j+3];
+
+				W0[ii][j+4] = W0[ii][j+4] - rate * dE_W0[ii][j+4];
+                                 W0[ii][j+5] = W0[ii][j+5] - rate * dE_W0[ii][j+5];
+                                 W0[ii][j+6] = W0[ii][j+6] - rate * dE_W0[ii][j+6];
+                                 W0[ii][j+7] = W0[ii][j+7] - rate * dE_W0[ii][j+7];
+			}
 
 	for (int i=0; i<N1; i++)
 		B1[i] = B1[i] - rate * dE_B1[i];
 
-	for (int i=0; i<N1; i++)
-		for (int j=0; j<N2; j++)
-			W1[i][j] = W1[i][j] - rate * dE_W1[i][j];
+
+	bk=20;
+	double temp_w1;
+	for (int i=0; i<N1; i++){
+		for (int j=0; j<N2; j+=bk){
+			
+				W1[i][j+0] = W1[i][j+0] - rate * dE_W1[i][j+0];
+				W1[i][j+1] = W1[i][j+1] - rate * dE_W1[i][j+1];
+				W1[i][j+2] = W1[i][j+2] - rate * dE_W1[i][j+2];
+				W1[i][j+3] = W1[i][j+3] - rate * dE_W1[i][j+3];
+				W1[i][j+4] = W1[i][j+4] - rate * dE_W1[i][j+4];
+
+				W1[i][j+5] = W1[i][j+5] - rate * dE_W1[i][j+5];
+				W1[i][j+6] = W1[i][j+6] - rate * dE_W1[i][j+6];
+				W1[i][j+7] = W1[i][j+7] - rate * dE_W1[i][j+7];
+				W1[i][j+8] = W1[i][j+8] - rate * dE_W1[i][j+8];
+				W1[i][j+9] = W1[i][j+9] - rate * dE_W1[i][j+9];
+
+				W1[i][j+10] = W1[i][j+10] - rate * dE_W1[i][j+10];
+				W1[i][j+11] = W1[i][j+11] - rate * dE_W1[i][j+11];
+				W1[i][j+12] = W1[i][j+12] - rate * dE_W1[i][j+12];
+				W1[i][j+13] = W1[i][j+13] - rate * dE_W1[i][j+13];
+				W1[i][j+14] = W1[i][j+14] - rate * dE_W1[i][j+14];
+
+				W1[i][j+15] = W1[i][j+15] - rate * dE_W1[i][j+15];
+				W1[i][j+16] = W1[i][j+16] - rate * dE_W1[i][j+16];
+				W1[i][j+17] = W1[i][j+17] - rate * dE_W1[i][j+17];
+				W1[i][j+18] = W1[i][j+18] - rate * dE_W1[i][j+18];
+				W1[i][j+19] = W1[i][j+19] - rate * dE_W1[i][j+19];
+			
+		}
+	}
 
 	for (int i=0; i<N2; i++)
 		B2[i] = B2[i] - rate * dE_B2[i];
 	
-
 	for (int i=0; i<N2; i++)
 		for (int j=0; j<N3; j++)
 			W2[i][j] = W2[i][j] - rate * dE_W2[i][j];
