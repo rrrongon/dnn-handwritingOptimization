@@ -201,7 +201,6 @@ void forward(vector<double> input)
 	}
 
 	int bk = 8; //blocking
-	auto start = chrono::high_resolution_clock::now();
 	for (int j=0; j<N0; j+=bk){ //loop interchange
 		for (int i=0; i<N1; i+=bk){
 			for (int jj=j;jj<j+bk;jj++){
@@ -221,8 +220,6 @@ void forward(vector<double> input)
                 for (int j=0; j<N0; j++)
                         HS_1[i] += IN[j]*W0[j][i];
         }*/
-	auto stop = chrono::high_resolution_clock::now();
-        auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
         //printf("Forward: HS_1 sum compute time: %d\n", duration.count());
 
         
@@ -237,7 +234,6 @@ void forward(vector<double> input)
 	}
 
 	bk = 20;
-	start = chrono::high_resolution_clock::now();
         /*for (int i=0; i<N2; i++) {
 		for (int j=0; j<N1; j++)
 			HS_2[i] += HO_1[j]*W1[j][i];
@@ -269,8 +265,6 @@ void forward(vector<double> input)
 				
 		}
 	}
-	stop = chrono::high_resolution_clock::now();
-	duration = chrono::duration_cast<chrono::microseconds>(stop - start);
 	//printf("Forward: HS_2 sum compute time: %d\n", duration.count());       
  
         // Comput the output of the hidden layer, HO[N1];
@@ -282,10 +276,28 @@ void forward(vector<double> input)
         for (int i=0; i<N3; i++) {
 		OS[i] = B3[i];
 	}
-        for (int i=0; i<N3; i++) {
+
+	bk = 10;
+        for (int j=0; j<N2; j+=bk) {
+		for (int i=0; i<N3; i+=bk)
+			for(int jj=j; jj< j+bk; jj++){
+				OS[i+0] += HO_2[jj]*W2[jj][i+0];
+				OS[i+1] += HO_2[jj]*W2[jj][i+1];
+				OS[i+2] += HO_2[jj]*W2[jj][i+2];
+				OS[i+3] += HO_2[jj]*W2[jj][i+3];
+				OS[i+4] += HO_2[jj]*W2[jj][i+4];
+				OS[i+5] += HO_2[jj]*W2[jj][i+5];
+				OS[i+6] += HO_2[jj]*W2[jj][i+6];
+				OS[i+7] += HO_2[jj]*W2[jj][i+7];
+				OS[i+8] += HO_2[jj]*W2[jj][i+8];
+				OS[i+9] += HO_2[jj]*W2[jj][i+9];
+			}
+	}
+	/*for (int i=0; i<N3; i++) {
 		for (int j=0; j<N2; j++)
 			OS[i] += HO_2[j]*W2[j][i];
-	}
+	}*/
+        //printf("Forward: OS sum compute time: %d\n", duration.count()); 
 
         // Comput the output of the output layer, OO[N2];
         for (int i=0; i<N3; i++) {
