@@ -483,17 +483,48 @@ double backward(double *O, vector<double> Y)
         */          
 
 	// compute dE_HO_1
-	//auto start = chrono::high_resolution_clock::now();
-	for (int i=0; i<N1; i++) {
+	double temp_dE_HO_1;
+        bk=20;
+	auto start = chrono::high_resolution_clock::now();
+	/*for (int i=0; i<N1; i++) {
 		dE_HO_1[i] = 0;
 		for (int j = 0; j<N2; j++){
 			dE_HO_1[i] += dE_HS_2[j]*W1[i][j];
 		}
+	}*/
+	for (int i=0; i<N1; i++) {
+		temp_dE_HO_1=0.0;
+		for (int j = 0; j<N2; j+=bk){
+				
+				temp_dE_HO_1 += dE_HS_2[j+0]*W1[i][j+0];
+				temp_dE_HO_1 += dE_HS_2[j+1]*W1[i][j+1];
+				temp_dE_HO_1 += dE_HS_2[j+2]*W1[i][j+2];
+				temp_dE_HO_1 += dE_HS_2[j+3]*W1[i][j+3];
+				temp_dE_HO_1 += dE_HS_2[j+4]*W1[i][j+4];
+				temp_dE_HO_1 += dE_HS_2[j+5]*W1[i][j+5];
+				temp_dE_HO_1 += dE_HS_2[j+6]*W1[i][j+6];
+				temp_dE_HO_1 += dE_HS_2[j+7]*W1[i][j+7];
+				temp_dE_HO_1 += dE_HS_2[j+8]*W1[i][j+8];
+				temp_dE_HO_1 += dE_HS_2[j+9]*W1[i][j+9];
+				temp_dE_HO_1 += dE_HS_2[j+10]*W1[i][j+10];
+				temp_dE_HO_1 += dE_HS_2[j+11]*W1[i][j+11];
+				temp_dE_HO_1 += dE_HS_2[j+12]*W1[i][j+12];
+				temp_dE_HO_1 += dE_HS_2[j+13]*W1[i][j+13];
+				temp_dE_HO_1 += dE_HS_2[j+14]*W1[i][j+14];
+				temp_dE_HO_1 += dE_HS_2[j+15]*W1[i][j+15];
+				temp_dE_HO_1 += dE_HS_2[j+16]*W1[i][j+16];
+				temp_dE_HO_1 += dE_HS_2[j+17]*W1[i][j+17];
+				temp_dE_HO_1 += dE_HS_2[j+18]*W1[i][j+18];
+				temp_dE_HO_1 += dE_HS_2[j+19]*W1[i][j+19];
+				
+		}
+		dE_HO_1[i] = temp_dE_HO_1;
 	}
-	/*auto stop = chrono::high_resolution_clock::now();
+
+	auto stop = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
         printf("Backward: dE_HO_1 compute time: %d\n", duration.count());
-	*/
+ 	
 
         // compute dHO_HS_1 = HO_1 dot (1-HO_1)
         for (int i=0; i<N1; i++)
@@ -508,7 +539,7 @@ double backward(double *O, vector<double> Y)
 		dE_B1[i] = dE_HS_1[i];
         
 	// compute dE_W0
-	auto start = chrono::high_resolution_clock::now();
+	//auto start = chrono::high_resolution_clock::now();
         /*for (int i=0; i<N0; i++)
 		for (int j = 0; j<N1; j++) 
 			dE_W0[i][j] = dE_HS_1[j]*IN[i];
@@ -541,9 +572,10 @@ double backward(double *O, vector<double> Y)
 			}
 		}
  
-	auto stop = chrono::high_resolution_clock::now();
+	/*auto stop = chrono::high_resolution_clock::now();
         auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
         printf("Backward: dE_W0 compute time: %d\n", duration.count());
+	*/
 
 	//cout << "err = " << err << "\n";
 	/*print_1d(IN, N0, "IN");
@@ -566,10 +598,48 @@ double backward(double *O, vector<double> Y)
 	for (int i=0; i<N1; i++)
 		B1[i] = B1[i] - rate * dE_B1[i];
 
-	for (int i=0; i<N1; i++)
+	//auto start = chrono::high_resolution_clock::now();
+	/*for (int i=0; i<N1; i++)
 		for (int j=0; j<N2; j++)
 			W1[i][j] = W1[i][j] - rate * dE_W1[i][j];
+	*/
 
+	bk=20;
+	double temp_w1;
+	for (int i=0; i<N1; i++){
+		for (int j=0; j<N2; j+=bk){
+			
+				W1[i][j+0] = W1[i][j+0] - rate * dE_W1[i][j+0];
+				W1[i][j+1] = W1[i][j+1] - rate * dE_W1[i][j+1];
+				W1[i][j+2] = W1[i][j+2] - rate * dE_W1[i][j+2];
+				W1[i][j+3] = W1[i][j+3] - rate * dE_W1[i][j+3];
+				W1[i][j+4] = W1[i][j+4] - rate * dE_W1[i][j+4];
+
+				W1[i][j+5] = W1[i][j+5] - rate * dE_W1[i][j+5];
+				W1[i][j+6] = W1[i][j+6] - rate * dE_W1[i][j+6];
+				W1[i][j+7] = W1[i][j+7] - rate * dE_W1[i][j+7];
+				W1[i][j+8] = W1[i][j+8] - rate * dE_W1[i][j+8];
+				W1[i][j+9] = W1[i][j+9] - rate * dE_W1[i][j+9];
+
+				W1[i][j+10] = W1[i][j+10] - rate * dE_W1[i][j+10];
+				W1[i][j+11] = W1[i][j+11] - rate * dE_W1[i][j+11];
+				W1[i][j+12] = W1[i][j+12] - rate * dE_W1[i][j+12];
+				W1[i][j+13] = W1[i][j+13] - rate * dE_W1[i][j+13];
+				W1[i][j+14] = W1[i][j+14] - rate * dE_W1[i][j+14];
+
+				W1[i][j+15] = W1[i][j+15] - rate * dE_W1[i][j+15];
+				W1[i][j+16] = W1[i][j+16] - rate * dE_W1[i][j+16];
+				W1[i][j+17] = W1[i][j+17] - rate * dE_W1[i][j+17];
+				W1[i][j+18] = W1[i][j+18] - rate * dE_W1[i][j+18];
+				W1[i][j+19] = W1[i][j+19] - rate * dE_W1[i][j+19];
+			
+		}
+	}
+
+	/*auto stop = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+        printf("Backward: W1 compute time: %d\n", duration.count());
+	*/
 	for (int i=0; i<N2; i++)
 		B2[i] = B2[i] - rate * dE_B2[i];
 	
