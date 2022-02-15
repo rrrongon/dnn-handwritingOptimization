@@ -63,99 +63,12 @@ Mon Feb  7 22:04:44 2022</br>
 - Once we finish this run and it generates satisfactory result, we have plan to run it again. So that, we can be sure of generating same result using this configuration.
 
 **Project 1 Part 2**
-REPORT
-
 We added several optimization techniques to speed up the execution. Below is the list of optimizations we performed along with the specific code region in which we performed it.
 
 Forward Propagation :
-
-Region
-Region Description
-Average Time Naive (ms)
-Average Time Optimized (ms)
-Percentage Improvement
-Techniques
-Block size
-HS_1
-1st Hidden Layer sum
-3860.09
-2002.73
-92.7
-Loop Unrolling, Blocking, Loop Interchange
-8
-HS_2
-2nd Hidden Layer sum
-2937.55
-1530.36
-91.9
-Loop Unrolling, Blocking, Loop Interchange
-20
-OS
-Output sum
-20.27
-14.45
-40.2
-Loop Unrolling, Blocking, Loop Interchange
-10
-
-
-
+![Screenshot](data_tree.png)
 Backward Propagation :
-
-
-Region
-Region Description
-Average Time Naive (ms)
-Average Time Optimized (ms)
-Percentage Improvement
-Techniques
-Block size
-dE_OS, dE_B3
-Error with respect to Output Sum and Bias
-1403
-1394.6
-0.64
-Loop Fusion
-N/A
-dE_W1
-Error with respect to Weights in hidden layer 1 to hidden layer 2
-1952.5
-1074
-81.75
-Loop Unrolling, Loop Blocking
-20
-dE_W0
-Error with respect to Weights in input layer to  hidden layer 1
-3330.7
-1815.4
-83.46
-Loop Unrolling, Loop Blocking
-16
-dE_HO_1
-Error with respect to output of hidden layer 1
-1888.5
-1769.1
-6.74
-Loop Unrolling, Loop Blocking
-20
-W1
-Assign new weights in hidden layer 1
-2022.6
-1731.2
-16.8
-Loop Blocking,
-Loop Unrolling
-20
-W0
-Assign new weights in input layer
-3046.8
-2669.2
-14.14
-Loop Blocking,
-Loop Unrolling
-8
-
-
+![Screenshot](data_tree.png)
 
 
 
