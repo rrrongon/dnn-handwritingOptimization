@@ -483,11 +483,17 @@ double backward(double *O, vector<double> Y)
         */          
 
 	// compute dE_HO_1
+	//auto start = chrono::high_resolution_clock::now();
 	for (int i=0; i<N1; i++) {
 		dE_HO_1[i] = 0;
-		for (int j = 0; j<N2; j++)
+		for (int j = 0; j<N2; j++){
 			dE_HO_1[i] += dE_HS_2[j]*W1[i][j];
+		}
 	}
+	/*auto stop = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+        printf("Backward: dE_HO_1 compute time: %d\n", duration.count());
+	*/
 
         // compute dHO_HS_1 = HO_1 dot (1-HO_1)
         for (int i=0; i<N1; i++)
@@ -502,10 +508,43 @@ double backward(double *O, vector<double> Y)
 		dE_B1[i] = dE_HS_1[i];
         
 	// compute dE_W0
-        for (int i=0; i<N0; i++)
+	auto start = chrono::high_resolution_clock::now();
+        /*for (int i=0; i<N0; i++)
 		for (int j = 0; j<N1; j++) 
 			dE_W0[i][j] = dE_HS_1[j]*IN[i];
-	
+	*/
+	bk = 16;
+	for (int i=0; i<N0; i+=bk){
+			for (int j = 0; j<N1; j+=bk){
+				for(int ii=i; ii<i+bk; ii++){
+					dE_W0[ii][j+0] = dE_HS_1[j+0]*IN[ii];
+					dE_W0[ii][j+1] = dE_HS_1[j+1]*IN[ii];
+					dE_W0[ii][j+2] = dE_HS_1[j+2]*IN[ii];
+					dE_W0[ii][j+3] = dE_HS_1[j+3]*IN[ii];
+
+					dE_W0[ii][j+4] = dE_HS_1[j+4]*IN[ii];
+					dE_W0[ii][j+5] = dE_HS_1[j+5]*IN[ii];
+					dE_W0[ii][j+6] = dE_HS_1[j+6]*IN[ii];
+					dE_W0[ii][j+7] = dE_HS_1[j+7]*IN[ii];
+
+					dE_W0[ii][j+8] = dE_HS_1[j+8]*IN[ii];
+					dE_W0[ii][j+9] = dE_HS_1[j+9]*IN[ii];
+					dE_W0[ii][j+10] = dE_HS_1[j+10]*IN[ii];
+					dE_W0[ii][j+11] = dE_HS_1[j+11]*IN[ii];
+
+					dE_W0[ii][j+12] = dE_HS_1[j+12]*IN[ii];
+					dE_W0[ii][j+13] = dE_HS_1[j+13]*IN[ii];
+					dE_W0[ii][j+14] = dE_HS_1[j+14]*IN[ii];
+					dE_W0[ii][j+15] = dE_HS_1[j+15]*IN[ii];
+
+				}
+			}
+		}
+ 
+	auto stop = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+        printf("Backward: dE_W0 compute time: %d\n", duration.count());
+
 	//cout << "err = " << err << "\n";
 	/*print_1d(IN, N0, "IN");
 	print_1d(dE_OO, N2, "dE_OO");
