@@ -17,6 +17,7 @@
 #include <fstream>
 #include <vector>
 #include <stdexcept>
+#include <chrono>
 
 using namespace std;
 #define N0  784
@@ -198,10 +199,32 @@ void forward(vector<double> input)
         for (int i=0; i<N1; i++) {
 		HS_1[i] = B1[i];
 	}
-        for (int i=0; i<N1; i++) {
-		for (int j=0; j<N0; j++)
-			HS_1[i] += IN[j]*W0[j][i];
+
+	int bk = 8; //blocking
+	auto start = chrono::high_resolution_clock::now();
+	for (int j=0; j<N0; j+=bk){ //loop interchange
+		for (int i=0; i<N1; i+=bk){
+			for (int jj=j;jj<j+bk;jj++){
+				HS_1[i+0] += IN[jj]*W0[jj][i+0];
+				HS_1[i+1] += IN[jj]*W0[jj][i+1];
+				HS_1[i+2] += IN[jj]*W0[jj][i+2];
+				HS_1[i+3] += IN[jj]*W0[jj][i+3];
+				HS_1[i+4] += IN[jj]*W0[jj][i+4];
+				HS_1[i+5] += IN[jj]*W0[jj][i+5];
+				HS_1[i+6] += IN[jj]*W0[jj][i+6];
+				HS_1[i+7] += IN[jj]*W0[jj][i+7];
+			}	
+		}
 	}
+
+	/*for (int i=0; i<N1; i++) {
+                for (int j=0; j<N0; j++)
+                        HS_1[i] += IN[j]*W0[j][i];
+        }*/
+	auto stop = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+        //printf("Forward: HS_1 sum compute time: %d\n", duration.count());
+
         
         // Comput the output of the hidden layer, HO[N1];
         for (int i=0; i<N1; i++) {
