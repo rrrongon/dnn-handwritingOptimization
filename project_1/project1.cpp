@@ -235,11 +235,44 @@ void forward(vector<double> input)
         for (int i=0; i<N2; i++) {
 		HS_2[i] = B2[i];
 	}
-        for (int i=0; i<N2; i++) {
+
+	bk = 20;
+	start = chrono::high_resolution_clock::now();
+        /*for (int i=0; i<N2; i++) {
 		for (int j=0; j<N1; j++)
 			HS_2[i] += HO_1[j]*W1[j][i];
+	}*/
+	for (int j=0; j<N1; j+=bk) {
+		for (int i=0; i<N2; i+=bk){
+			for (int jj=j;jj<j+bk;jj++){
+				HS_2[i+0] += HO_1[jj]* W1[jj][i+0];
+				HS_2[i+1] += HO_1[jj]* W1[jj][i+1];
+				HS_2[i+2] += HO_1[jj]* W1[jj][i+2];
+				HS_2[i+3] += HO_1[jj]* W1[jj][i+3];
+				HS_2[i+4] += HO_1[jj]* W1[jj][i+4];
+				HS_2[i+5] += HO_1[jj]* W1[jj][i+5];
+				HS_2[i+6] += HO_1[jj]* W1[jj][i+6];
+				HS_2[i+7] += HO_1[jj]* W1[jj][i+7];
+				HS_2[i+8] += HO_1[jj]* W1[jj][i+8];
+				HS_2[i+9] += HO_1[jj]* W1[jj][i+9];
+				HS_2[i+10] += HO_1[jj]* W1[jj][i+10];
+				HS_2[i+11] += HO_1[jj]* W1[jj][i+11];
+				HS_2[i+12] += HO_1[jj]* W1[jj][i+12];
+				HS_2[i+13] += HO_1[jj]* W1[jj][i+13];
+				HS_2[i+14] += HO_1[jj]* W1[jj][i+14];
+				HS_2[i+15] += HO_1[jj]* W1[jj][i+15];
+				HS_2[i+16] += HO_1[jj]* W1[jj][i+16];
+				HS_2[i+17] += HO_1[jj]* W1[jj][i+17];
+				HS_2[i+18] += HO_1[jj]* W1[jj][i+18];
+				HS_2[i+19] += HO_1[jj]* W1[jj][i+19];
+			}
+				
+		}
 	}
-        
+	stop = chrono::high_resolution_clock::now();
+	duration = chrono::duration_cast<chrono::microseconds>(stop - start);
+	//printf("Forward: HS_2 sum compute time: %d\n", duration.count());       
+ 
         // Comput the output of the hidden layer, HO[N1];
         for (int i=0; i<N2; i++) {
 		HO_2[i] = scaled_tanh(HS_2[i]);
