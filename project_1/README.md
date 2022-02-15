@@ -66,10 +66,10 @@ Mon Feb  7 22:04:44 2022</br>
 We added several optimization techniques to speed up the execution. Below is the list of optimizations we performed along with the specific code region in which we performed it.
 
 Forward Propagation :
-![Screenshot](data_tree.png)
-Backward Propagation :
-![Screenshot](data_tree.png)
+![Screenshot](Forward.png)
 
+
+For complete report please checkout the REPORT.pdf.
 
 
 ### Acknowledgement
