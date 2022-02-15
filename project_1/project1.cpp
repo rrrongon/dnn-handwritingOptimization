@@ -549,10 +549,6 @@ double backward(double *O, vector<double> Y)
 
 }  
 
-
-//double X[4][2] = {{0.0, 0.0}, {0.0, 1.0}, {1.0, 0.0}, {1.0, 1.0}};
-//double Y[4][2] = {{0.0, 0.0}, {0.0, 1.0}, {0.0, 1.0}, {1.0, 0.0}};
-//double Y[4][2] = {{0.0, 0.0}, {1.0, 1.0}, {1.0, 1.0}, {0.0, 0.0}};
 	
 
 void train(int iter)
@@ -643,40 +639,6 @@ int main(int argc, char *argv[])
 	int number_of_labels = 0;
 	read_mnist_labels("./data/train_data/output/train-labels-idx1-ubyte", number_of_labels);
 	cout << "LABEL READ COMPLETE" << endl;
-
-
-
-
-        /*
-	*
-	*	
-	*	Print The Image Data
-	*	
-	*
-	for (int i = 0; i < data_X.size(); i++){
-		for (int j = 0; j < data_X[i].size(); j++){
-			if (j % 28 == 0)
-				cout << endl;
-			double mm =  (data_X[i][j]+10)*127.5;
-			if (mm == 0.0){
-				cout << ".";
-			}
-			else{
-				cout << "@";
-			}
-		}
-		cout << endl;
-		cout << "Label : ";
-		for (int k = 0; k < data_Y[i].size(); k++){
-			cout << data_Y[i][k] << "\t";
-		}
-		cout << endl;
-	}
-	*
-	*
-	*
-	*
-	*/
 	
 	// randomize weights
 	int seed = 30;
@@ -702,27 +664,13 @@ int main(int argc, char *argv[])
 			W2[i][j] = distribution(generator);		
 	cout << "WEIGHT DISTRIBUTION COMPLETE" << endl;	
 
-
-
 	if (argc == 2) train(atoi(argv[1]));
         else train(700000);
 
-	//        cout << "w1 = " << w1 << ", w2 = " << w2 << ", b = " << b << "\n";
-        
-//	cout << "w1 = " << w1 << ", w2 = " << w2 <<  ", w3 = " << w3 << "\n";
 
 	/* For Testing */
 	int m = 4;
 	test(data_X[m]);
 
 
-	/*
-	cout << "(0, 0) -> " << "(" << OO[0] << ", " << OO[1]  << ")\n";
-        forward(X[1]);
-	cout << "(0, 1) -> " << "(" << OO[0] << ", " << OO[1]  << ")\n";
-        forward(X[2]);
-	cout << "(1, 0) -> " << "(" << OO[0] << ", " << OO[1]  << ")\n";
-        forward(X[3]);
-	cout << "(1, 1) -> " << "(" << OO[0] << ", " << OO[1]  << ")\n";
-*/
 }
