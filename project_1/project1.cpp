@@ -362,7 +362,23 @@ double backward(double *O, vector<double> Y)
         for (int i=0; i<N3; i++) 
 		dE_OO[i] = (O[i] - Y[i])*2.0/N3;
 
+	double temp_OOi;
+        for (int i=0; i<N3; i++){
+		i/*OO[i] = AtanH(Bx)
+ * 		A * B (1 - (tanh(Bx) * tanh(Bx)))
+ * 		B * (A - (A * tanhx(Bx) * tanhx(Bx)))
+ * 		B * (A - OO[i] * OO[i])
+ * 		A * B (1 - (tanh(Bx) * tanh(Bx)))*/
+		dE_OO[i] = (O[i] - Y[i])*2.0/N3; //loop fusion
+		temp_OOi =  OO[i];
+		dOO_OS[i] = B * (A - (temp_OOi * temp_OOi / A)); //A * B (1 - (tanh(Bx) * tanh(Bx)))
+		dE_OS[i] = dE_OO[i] * dOO_OS[i];
+		dE_B3[i] = dE_OS[i];
+	}
+
         // compute dOO_OS = OO dot (1-OO)
+        /*auto start = chrono::high_resolution_clock::now();
+
         for (int i=0; i<N3; i++)
 		//OO[i] = AtanH(Bx)
 		//
@@ -379,6 +395,10 @@ double backward(double *O, vector<double> Y)
         // compute dE_B3 = dE_OS
         for (int i=0; i<N3; i++)
 		dE_B3[i] = dE_OS[i];
+	
+	auto stop = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::nanoseconds>(stop - start);
+        printf("Backward: dOO_OS+dE_OS+dE_B3 compute time: %d\n", duration.count()); */
 
         // compute dE_W2
         for (int i=0; i<N2; i++)
