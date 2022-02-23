@@ -19,19 +19,21 @@
 #include <stdexcept>
 #include <chrono>
 #include <emmintrin.h>
-#include<sys/time.h>
 #include<time.h>
 #include<stdio.h>
-
+#include <stdio.h>
+#include <string.h>
+#include <sys/time.h>
 
 
 using namespace std;
 
-void print_duration(struct timespec *b, struct timespec *c)
+long long int print_duration(struct timespec *b, struct timespec *c)
 {
 	long long r = c->tv_nsec - b->tv_nsec;
         r += ((long long)(c->tv_sec - b->tv_sec) ) * 1000000000;
 	printf("duration = %lld nanoseconds\n", r);
+	return r;
 }
 
 
@@ -60,15 +62,15 @@ double B3[N3];
 double OS[N3];
 double OO[N3];
 
+long long int loop_1 = 0;
+
+
 
 typedef unsigned char uchar;
 vector<vector <double> >  data_X;
 vector<vector <double> >  data_Y;
 
 struct timespec bb, ee;
-clock_gettime(CLOCK_THREAD_CPUTIME_ID, &bb); 
-clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
-print_duration(&bb, &ee);
 
 
 
@@ -219,20 +221,79 @@ void forward(vector<double> input)
 	}
 
 	int bk = 8; //blocking
+	__m128d V_IN;
+	__m128d V_W0_1;
+	__m128d V_HS_1_1;
+	__m128d V_W0_3;
+	__m128d V_HS_1_3;
+	__m128d V_W0_5;
+	__m128d V_HS_1_5;
+	__m128d xxx;
+	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &bb); 
 	for (int j=0; j<N0; j+=bk){ //loop interchange
 		for (int i=0; i<N1; i+=bk){
 			for (int jj=j;jj<j+bk;jj++){
-				HS_1[i+0] += IN[jj]*W0[jj][i+0];
-				HS_1[i+1] += IN[jj]*W0[jj][i+1];
-				HS_1[i+2] += IN[jj]*W0[jj][i+2];
-				HS_1[i+3] += IN[jj]*W0[jj][i+3];
-				HS_1[i+4] += IN[jj]*W0[jj][i+4];
-				HS_1[i+5] += IN[jj]*W0[jj][i+5];
-				HS_1[i+6] += IN[jj]*W0[jj][i+6];
-				HS_1[i+7] += IN[jj]*W0[jj][i+7];
+				//HS_1[i+0] += IN[jj]*W0[jj][i+0];
+				//HS_1[i+1] += IN[jj]*W0[jj][i+1];
+				V_IN = _mm_loadl_pd(xxx, &IN[jj]);
+				V_IN = _mm_loadh_pd(V_IN, &IN[jj]);
+	
+				V_W0_1 = _mm_loadl_pd(xxx, &W0[jj][i+0]);
+				V_W0_1 = _mm_loadh_pd(V_W0_1, &W0[jj][i+1]);
+				V_HS_1_1 = _mm_loadl_pd(xxx, &HS_1[i+0]);
+				V_HS_1_1 = _mm_loadh_pd(V_HS_1_1, &HS_1[i+1]);
+				
+				V_W0_3 = _mm_loadl_pd(xxx, &W0[jj][i+2]);
+				V_W0_3 = _mm_loadh_pd(V_W0_3, &W0[jj][i+3]);
+				V_HS_1_3 = _mm_loadl_pd(xxx, &HS_1[i+2]);
+				V_HS_1_3 = _mm_loadh_pd(V_HS_1_3, &HS_1[i+3]);
+				
+				V_W0_5 = _mm_loadl_pd(xxx, &W0[jj][i+4]);
+				V_W0_5 = _mm_loadh_pd(V_W0_5, &W0[jj][i+5]);
+				V_HS_1_5 = _mm_loadl_pd(xxx, &HS_1[i+4]);
+				V_HS_1_5 = _mm_loadh_pd(V_HS_1_5, &HS_1[i+5]);
+				
+				V_W0_1 = _mm_mul_pd(V_IN, V_W0_1);
+				V_W0_1 = _mm_add_pd(V_W0_1, V_HS_1_1);
+
+				V_W0_3 = _mm_mul_pd(V_IN, V_W0_3);
+				V_W0_3 = _mm_add_pd(V_W0_3, V_HS_1_3);
+
+				V_W0_5 = _mm_mul_pd(V_IN, V_W0_5);
+				V_W0_5 = _mm_add_pd(V_W0_5, V_HS_1_5);
+			
+				_mm_storel_pd(&HS_1[i+0], V_W0_1);
+				_mm_storeh_pd(&HS_1[i+1], V_W0_1);
+			
+				_mm_storel_pd(&HS_1[i+2], V_W0_3);
+				_mm_storeh_pd(&HS_1[i+3], V_W0_3);
+				
+				_mm_storel_pd(&HS_1[i+4], V_W0_5);
+				_mm_storeh_pd(&HS_1[i+5], V_W0_5);
+				
+				
+				V_W0_1 = _mm_loadl_pd(xxx, &W0[jj][i+6]);
+				V_W0_1 = _mm_loadh_pd(V_W0_1, &W0[jj][i+7]);
+				V_HS_1_1 = _mm_loadl_pd(xxx, &HS_1[i+6]);
+				V_HS_1_1 = _mm_loadh_pd(V_HS_1_1, &HS_1[i+7]);
+				
+				V_W0_1 = _mm_mul_pd(V_IN, V_W0_1);
+				V_W0_1 = _mm_add_pd(V_W0_1, V_HS_1_1);
+				
+				_mm_storel_pd(&HS_1[i+6], V_W0_1);
+				_mm_storeh_pd(&HS_1[i+7], V_W0_1);
+				
+				//HS_1[i+2] += IN[jj]*W0[jj][i+2];
+				//HS_1[i+3] += IN[jj]*W0[jj][i+3];
+				//HS_1[i+4] += IN[jj]*W0[jj][i+4];
+				//HS_1[i+5] += IN[jj]*W0[jj][i+5];
+				//HS_1[i+6] += IN[jj]*W0[jj][i+6];
+				//HS_1[i+7] += IN[jj]*W0[jj][i+7];
 			}	
 		}
 	}
+	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
+	//loop_1 += print_duration(&bb, &ee);
 
         // Comput the output of the hidden layer, HO[N1];
         for (int i=0; i<N1; i++) {
@@ -505,19 +566,69 @@ double backward(double *O, vector<double> Y)
         // update W0, W1, W2, B1, B2, B3;
 
 	bk=8;
+	__m128d v_rate;
+	__m128d v_de_w0_1;
+	__m128d v_w0_1;
+	
+	__m128d v_de_w0_3;
+	__m128d v_w0_3;
+	
+	/*__m128d v_de_w0_5;
+	__m128d v_w0_5;*/
+	__m128d xxx;
+	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &bb); 
 	for (int i=0; i<N0; i+=bk)
                 for (int j=0; j<N1; j+=bk)
 			for(int ii=i; ii< i+bk; ii++){
-                        	W0[ii][j+0] = W0[ii][j+0] - rate * dE_W0[ii][j+0];
-				 W0[ii][j+1] = W0[ii][j+1] - rate * dE_W0[ii][j+1];
-				 W0[ii][j+2] = W0[ii][j+2] - rate * dE_W0[ii][j+2];
-				 W0[ii][j+3] = W0[ii][j+3] - rate * dE_W0[ii][j+3];
+				v_rate = _mm_loadl_pd(xxx, &rate);
+				v_rate = _mm_loadh_pd(v_rate, &rate);
+	
+				v_w0_1 = _mm_loadl_pd(xxx, &W0[ii][j+0]);
+				v_w0_1 = _mm_loadh_pd(v_w0_1, &W0[ii][j+1]);
+				v_w0_3 = _mm_loadl_pd(xxx, &W0[ii][j+2]);
+				v_w0_3 = _mm_loadh_pd(v_w0_3, &W0[ii][j+3]);
+				//v_w0_5 = _mm_loadl_pd(xxx, &W0[ii][j+4]);
+				//v_w0_5 = _mm_loadh_pd(v_w0_5, &W0[ii][j+5]);
 
+				v_de_w0_1 = _mm_loadl_pd(xxx, &dE_W0[ii][j+0]);
+				v_de_w0_1 = _mm_loadh_pd(v_de_w0_1, &dE_W0[ii][j+1]);
+				v_de_w0_3 = _mm_loadl_pd(xxx, &dE_W0[ii][j+2]);
+				v_de_w0_3 = _mm_loadh_pd(v_de_w0_3, &dE_W0[ii][j+3]);
+				//v_de_w0_5 = _mm_loadl_pd(xxx, &dE_W0[ii][j+4]);
+				//v_de_w0_5 = _mm_loadh_pd(v_de_w0_5, &dE_W0[ii][j+5]);
+				
+		
+				v_de_w0_1 = _mm_mul_pd(v_rate, v_de_w0_1);
+				v_w0_1 = _mm_sub_pd(v_w0_1, v_de_w0_1);
+				
+				v_de_w0_3 = _mm_mul_pd(v_rate, v_de_w0_3);
+				v_w0_3 = _mm_sub_pd(v_w0_3, v_de_w0_3);
+				
+				//v_de_w0_5 = _mm_mul_pd(v_rate, v_de_w0_5);
+				//v_w0_5 = _mm_sub_pd(v_w0_5, v_de_w0_5);
+				
+				_mm_storel_pd(&W0[ii][j+0], v_w0_1);
+				_mm_storeh_pd(&W0[ii][j+1], v_w0_1);
+				_mm_storel_pd(&W0[ii][j+2], v_w0_3);
+				_mm_storeh_pd(&W0[ii][j+3], v_w0_3);
+				//_mm_storel_pd(&W0[ii][j+4], v_w0_5);
+				//_mm_storeh_pd(&W0[ii][j+5], v_w0_5);
+/*
+
+                        	W0[ii][j+0] = W0[ii][j+0] - rate * dE_W0[ii][j+0];
+				W0[ii][j+1] = W0[ii][j+1] - rate * dE_W0[ii][j+1];
+				W0[ii][j+2] = W0[ii][j+2] - rate * dE_W0[ii][j+2];
+				W0[ii][j+3] = W0[ii][j+3] - rate * dE_W0[ii][j+3];
+*/
 				W0[ii][j+4] = W0[ii][j+4] - rate * dE_W0[ii][j+4];
-                                 W0[ii][j+5] = W0[ii][j+5] - rate * dE_W0[ii][j+5];
-                                 W0[ii][j+6] = W0[ii][j+6] - rate * dE_W0[ii][j+6];
-                                 W0[ii][j+7] = W0[ii][j+7] - rate * dE_W0[ii][j+7];
+                              	W0[ii][j+5] = W0[ii][j+5] - rate * dE_W0[ii][j+5];
+                     
+			           W0[ii][j+6] = W0[ii][j+6] - rate * dE_W0[ii][j+6];
+                                W0[ii][j+7] = W0[ii][j+7] - rate * dE_W0[ii][j+7];
 			}
+
+	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee); 
+	loop_1 += print_duration(&bb, &ee);
 
 	for (int i=0; i<N1; i++)
 		B1[i] = B1[i] - rate * dE_B1[i];
@@ -689,6 +800,6 @@ int main(int argc, char *argv[])
 	/* For Testing */
 	int m = 4;
 	test(data_X[m]);
-
+ 	cout << "Loop : " << (double)loop_1/atoi(argv[1]) << endl;
 
 }
