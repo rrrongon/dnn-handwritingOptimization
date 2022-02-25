@@ -305,11 +305,134 @@ void forward(vector<double> input)
 		HS_2[i] = B2[i];
 	}
 
+	__m128d V_HO_1;
+	__m128d V_W1_1;
+__m128d V_HS_2_1;
+__m128d V_W1_3;
+__m128d V_HS_2_3;
+__m128d V_W1_5;
+__m128d V_HS_2_5;
+	__m128d V_W1_7;
+__m128d V_HS_2_7;
+__m128d V_W1_9;
+__m128d V_HS_2_9;
+__m128d V_W1_11;
+__m128d V_HS_2_11;
+	__m128d V_W1_13;
+__m128d V_HS_2_13;
+__m128d V_W1_15;
+__m128d V_HS_2_15;
+__m128d V_W1_17;
+__m128d V_HS_2_17;
 	bk = 20;
+	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
 	for (int j=0; j<N1; j+=bk) {
 		for (int i=0; i<N2; i+=bk){
 			for (int jj=j;jj<j+bk;jj++){
-				HS_2[i+0] += HO_1[jj]* W1[jj][i+0];
+				                 V_HO_1 = _mm_loadl_pd(xxx, &HO_1[jj]);
+                    V_HO_1 = _mm_loadh_pd(V_HO_1, &HO_1[jj]);
+
+                    V_W1_1 = _mm_loadl_pd(xxx, &W1[jj][i+0]);
+                    V_W1_1 = _mm_loadh_pd(V_W1_1, &W1[jj][i+1]);
+                    V_HS_2_1 = _mm_loadl_pd(xxx, &HS_2[i+0]);
+                    V_HS_2_1 = _mm_loadh_pd(V_HS_2_1, &HS_2[i+1]);
+                    
+                    V_W1_3 = _mm_loadl_pd(xxx, &W1[jj][i+2]);
+                    V_W1_3 = _mm_loadh_pd(V_W1_3, &W1[jj][i+3]);
+                    V_HS_2_3 = _mm_loadl_pd(xxx, &HS_2[i+2]);
+                    V_HS_2_3 = _mm_loadh_pd(V_HS_2_3, &HS_2[i+3]);
+                    
+                    V_W1_5 = _mm_loadl_pd(xxx, &W1[jj][i+4]);
+                    V_W1_5 = _mm_loadh_pd(V_W1_5, &W1[jj][i+5]);
+                    V_HS_2_5 = _mm_loadl_pd(xxx, &HS_2[i+4]);
+                    V_HS_2_5 = _mm_loadh_pd(V_HS_2_5, &HS_2[i+5]);
+                    
+                    V_W1_1 = _mm_mul_pd(V_HO_1, V_W1_1);
+                    V_W1_1 = _mm_add_pd(V_W1_1, V_HS_2_1);
+
+                    V_W1_3 = _mm_mul_pd(V_HO_1, V_W1_3);
+                    V_W1_3 = _mm_add_pd(V_W1_3, V_HS_2_3);
+
+                    V_W1_5 = _mm_mul_pd(V_HO_1, V_W1_5);
+                    V_W1_5 = _mm_add_pd(V_W1_5, V_HS_2_5);
+                    
+                    _mm_storel_pd(&HS_2[i+0], V_W1_1);
+                    _mm_storeh_pd(&HS_2[i+1], V_W1_1);
+                    
+                    _mm_storel_pd(&HS_2[i+2], V_W1_3);
+                    _mm_storeh_pd(&HS_2[i+3], V_W1_3);
+                            
+                    _mm_storel_pd(&HS_2[i+4], V_W1_5);
+                    _mm_storeh_pd(&HS_2[i+5], V_W1_5);
+
+		                    V_W1_7 = _mm_loadl_pd(xxx, &W1[jj][i+6]);
+                    V_W1_7 = _mm_loadh_pd(V_W1_7, &W1[jj][i+7]);
+                    V_HS_2_7 = _mm_loadl_pd(xxx, &HS_2[i+6]);
+                    V_HS_2_7 = _mm_loadh_pd(V_HS_2_7, &HS_2[i+7]);
+                    
+                    V_W1_9 = _mm_loadl_pd(xxx, &W1[jj][i+8]);
+                    V_W1_9 = _mm_loadh_pd(V_W1_9, &W1[jj][i+9]);
+                    V_HS_2_9 = _mm_loadl_pd(xxx, &HS_2[i+8]);
+                    V_HS_2_9 = _mm_loadh_pd(V_HS_2_9, &HS_2[i+9]);
+                    
+                    V_W1_11 = _mm_loadl_pd(xxx, &W1[jj][i+10]);
+                    V_W1_11 = _mm_loadh_pd(V_W1_11, &W1[jj][i+11]);
+                    V_HS_2_11 = _mm_loadl_pd(xxx, &HS_2[i+10]);
+                    V_HS_2_11 = _mm_loadh_pd(V_HS_2_11, &HS_2[i+11]);
+                    
+                    V_W1_7 = _mm_mul_pd(V_HO_1, V_W1_7);
+                    V_W1_7 = _mm_add_pd(V_W1_7, V_HS_2_7);
+
+                    V_W1_9 = _mm_mul_pd(V_HO_1, V_W1_9);
+                    V_W1_9 = _mm_add_pd(V_W1_9, V_HS_2_9);
+
+                    V_W1_11 = _mm_mul_pd(V_HO_1, V_W1_11);
+                    V_W1_11 = _mm_add_pd(V_W1_11, V_HS_2_11);
+                    
+                    _mm_storel_pd(&HS_2[i+6], V_W1_7);
+                    _mm_storeh_pd(&HS_2[i+7], V_W1_7);
+                    
+                    _mm_storel_pd(&HS_2[i+8], V_W1_9);
+                    _mm_storeh_pd(&HS_2[i+9], V_W1_9);
+                            
+                    _mm_storel_pd(&HS_2[i+10], V_W1_11);
+                    _mm_storeh_pd(&HS_2[i+11], V_W1_11);	
+
+     V_W1_13 = _mm_loadl_pd(xxx, &W1[jj][i+12]);
+                    V_W1_13 = _mm_loadh_pd(V_W1_13, &W1[jj][i+13]);
+                    V_HS_2_13 = _mm_loadl_pd(xxx, &HS_2[i+12]);
+                    V_HS_2_13 = _mm_loadh_pd(V_HS_2_13, &HS_2[i+13]);
+                    
+                    V_W1_15 = _mm_loadl_pd(xxx, &W1[jj][i+14]);
+                    V_W1_15 = _mm_loadh_pd(V_W1_15, &W1[jj][i+15]);
+                    V_HS_2_15 = _mm_loadl_pd(xxx, &HS_2[i+14]);
+                    V_HS_2_15 = _mm_loadh_pd(V_HS_2_15, &HS_2[i+15]);
+                    
+                    V_W1_17 = _mm_loadl_pd(xxx, &W1[jj][i+16]);
+                    V_W1_17 = _mm_loadh_pd(V_W1_17, &W1[jj][i+17]);
+                    V_HS_2_17 = _mm_loadl_pd(xxx, &HS_2[i+16]);
+                    V_HS_2_17 = _mm_loadh_pd(V_HS_2_17, &HS_2[i+17]);
+                    
+                    V_W1_13 = _mm_mul_pd(V_HO_1, V_W1_13);
+                    V_W1_13 = _mm_add_pd(V_W1_13, V_HS_2_13);
+
+                    V_W1_15 = _mm_mul_pd(V_HO_1, V_W1_15);
+                    V_W1_15 = _mm_add_pd(V_W1_15, V_HS_2_15);
+
+                    V_W1_17 = _mm_mul_pd(V_HO_1, V_W1_17);
+                    V_W1_17 = _mm_add_pd(V_W1_17, V_HS_2_17);
+                    
+                    _mm_storel_pd(&HS_2[i+12], V_W1_13);
+                    _mm_storeh_pd(&HS_2[i+13], V_W1_13);
+                    
+                    _mm_storel_pd(&HS_2[i+14], V_W1_15);
+                    _mm_storeh_pd(&HS_2[i+15], V_W1_15);
+                            
+                    _mm_storel_pd(&HS_2[i+16], V_W1_17);
+                    _mm_storeh_pd(&HS_2[i+17], V_W1_17);
+
+
+				/*HS_2[i+0] += HO_1[jj]* W1[jj][i+0];
 				HS_2[i+1] += HO_1[jj]* W1[jj][i+1];
 				HS_2[i+2] += HO_1[jj]* W1[jj][i+2];
 				HS_2[i+3] += HO_1[jj]* W1[jj][i+3];
@@ -326,13 +449,15 @@ void forward(vector<double> input)
 				HS_2[i+14] += HO_1[jj]* W1[jj][i+14];
 				HS_2[i+15] += HO_1[jj]* W1[jj][i+15];
 				HS_2[i+16] += HO_1[jj]* W1[jj][i+16];
-				HS_2[i+17] += HO_1[jj]* W1[jj][i+17];
+				HS_2[i+17] += HO_1[jj]* W1[jj][i+17];*/
 				HS_2[i+18] += HO_1[jj]* W1[jj][i+18];
 				HS_2[i+19] += HO_1[jj]* W1[jj][i+19];
 			}
 				
 		}
 	}
+	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
+	loop_1 += print_duration(&bb, &ee);
  
         // Comput the output of the hidden layer, HO[N1];
         for (int i=0; i<N2; i++) {
@@ -576,7 +701,7 @@ double backward(double *O, vector<double> Y)
 	/*__m128d v_de_w0_5;
 	__m128d v_w0_5;*/
 	__m128d xxx;
-	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &bb); 
+	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &bb); 
 	for (int i=0; i<N0; i+=bk)
                 for (int j=0; j<N1; j+=bk)
 			for(int ii=i; ii< i+bk; ii++){
@@ -627,8 +752,8 @@ double backward(double *O, vector<double> Y)
                                 W0[ii][j+7] = W0[ii][j+7] - rate * dE_W0[ii][j+7];
 			}
 
-	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee); 
-	loop_1 += print_duration(&bb, &ee);
+	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee); 
+	//loop_1 += print_duration(&bb, &ee);
 
 	for (int i=0; i<N1; i++)
 		B1[i] = B1[i] - rate * dE_B1[i];
