@@ -46,8 +46,8 @@ long long int print_duration(struct timespec *b, struct timespec *c)
 #define HEIGHT 28
 #define WIDTH 28
 
-#define NOVECTOR 0
-#define VECTOR 1
+#define NOVECTOR 1
+#define VECTOR 0
 
 double IN[N0]; // Input Layer
 double W0[N0][N1]; //Input to hidden layer1
@@ -82,7 +82,7 @@ struct timespec bb, ee;
 
 
 double err;
-double rate = 0.001; //Learning Rate
+double rate = 0.0001; //Learning Rate
 
 
 double scaled_tanh(double x)
@@ -149,7 +149,7 @@ void read_mnist_images(string full_path, int& number_of_images, int& image_size)
 	vector<double> temp;
         for(int ii=0; ii < number_of_images; ii++){
 		for(int jj=0; jj < image_size; jj++){
-			temp.push_back( (double(_dataset[ii][jj]) / 127.5) - 10 ); //Scale (input[i][j] / 127.5) - 10
+			temp.push_back( (double(_dataset[ii][jj]) / 127.5) - 1 ); //Scale (input[i][j] / 127.5) - 10
 		}
 		data_X.push_back(temp);
 		temp.clear();
@@ -203,11 +203,10 @@ void read_mnist_labels(string full_path, int& number_of_labels) {
         for(int i = 0; i < number_of_labels; i++) {
             file.read((char*)&_dataset[i], 1);
         }
- 	vector<double> temp(10, 0.0);
 	for (int ii = 0; ii < number_of_labels; ii++){
-		temp[(int)_dataset[ii]] = 1.0;
+ 		vector<double> temp(10, -1.715);
+		temp[(int)_dataset[ii]] = 1.715;
 		data_Y.push_back(temp);
-		temp[(int)_dataset[ii]] = 0.0;
 	} 
     } else {
         throw runtime_error("Unable to open file `" + full_path + "`!");
@@ -291,6 +290,7 @@ void forward(vector<double> input)
                     
                     _mm_storel_pd(&HS_1[i+6], V_W0_1);
                     _mm_storeh_pd(&HS_1[i+7], V_W0_1);
+
 #endif
 
 #if NOVECTOR	
@@ -448,7 +448,6 @@ void forward(vector<double> input)
                             
                     _mm_storel_pd(&HS_2[i+16], V_W1_17);
                     _mm_storeh_pd(&HS_2[i+17], V_W1_17);
-
 #endif
 
 #if NOVECTOR
@@ -781,6 +780,7 @@ double backward(double *O, vector<double> Y)
                     _mm_storeh_pd(&W0[ii][j+5], v_w0_5);
                     _mm_storel_pd(&W0[ii][j+6], v_w0_7);
                     _mm_storeh_pd(&W0[ii][j+7], v_w0_7);
+
 #endif
 
 #if NOVECTOR
@@ -814,14 +814,25 @@ double backward(double *O, vector<double> Y)
         __m128d v_w1_5;
         __m128d v_de_w1_7;
         __m128d v_w1_7;
+        __m128d v_de_w1_9;
+        __m128d v_w1_9;
+        __m128d v_de_w1_11;
+        __m128d v_w1_11;
+        __m128d v_de_w1_13;
+        __m128d v_w1_13;
+        __m128d v_de_w1_15;
+        __m128d v_w1_15;
+        __m128d v_de_w1_17;
+        __m128d v_w1_17;
+        __m128d v_de_w1_19;
+        __m128d v_w1_19;
         __m128d xxx;
 #endif
         clock_gettime(CLOCK_THREAD_CPUTIME_ID, &bb);
         double temp_w1;
         for (int i=0; i<N1; i++){
             for (int j=0; j<N2; j+=bk){
-#if VECTOR
-                
+#if VECTOR              
                     v_rate = _mm_loadl_pd(xxx, &rate);
                     v_rate = _mm_loadh_pd(v_rate, &rate);
         
@@ -871,6 +882,77 @@ double backward(double *O, vector<double> Y)
                     _mm_storeh_pd(&W1[i][j+5], v_w1_5);
                     _mm_storel_pd(&W1[i][j+6], v_w1_7);
                     _mm_storeh_pd(&W1[i][j+7], v_w1_7);
+                
+                    v_w1_9 = _mm_loadl_pd(xxx, &W1[i][j+8]);
+                    v_w1_9 = _mm_loadh_pd(v_w1_9, &W1[i][j+9]);
+                    v_w1_11 = _mm_loadl_pd(xxx, &W1[i][j+10]);
+                    v_w1_11 = _mm_loadh_pd(v_w1_11, &W1[i][j+11]);
+
+                    v_de_w1_9 = _mm_loadl_pd(xxx, &dE_W1[i][j+8]);
+                    v_de_w1_9 = _mm_loadh_pd(v_de_w1_9, &dE_W1[i][j+9]);
+                    v_de_w1_11 = _mm_loadl_pd(xxx, &dE_W1[i][j+10]);
+                    v_de_w1_11 = _mm_loadh_pd(v_de_w1_11, &dE_W1[i][j+11]);
+                    
+            
+                    v_de_w1_9 = _mm_mul_pd(v_rate, v_de_w1_9);
+                    v_w1_9 = _mm_sub_pd(v_w1_9, v_de_w1_9);
+                    
+                    v_de_w1_11 = _mm_mul_pd(v_rate, v_de_w1_11);
+                    v_w1_11 = _mm_sub_pd(v_w1_11, v_de_w1_11);
+                    
+                    
+                    _mm_storel_pd(&W1[i][j+8], v_w1_9);
+                    _mm_storeh_pd(&W1[i][j+9], v_w1_9);
+                    _mm_storel_pd(&W1[i][j+10], v_w1_11);
+                    _mm_storeh_pd(&W1[i][j+11], v_w1_11);
+                    
+                    
+                    v_w1_13 = _mm_loadl_pd(xxx, &W1[i][j+12]);
+                    v_w1_13 = _mm_loadh_pd(v_w1_13, &W1[i][j+13]);
+                    v_w1_15 = _mm_loadl_pd(xxx, &W1[i][j+14]);
+                    v_w1_15 = _mm_loadh_pd(v_w1_15, &W1[i][j+15]);
+
+                    v_de_w1_13 = _mm_loadl_pd(xxx, &dE_W1[i][j+12]);
+                    v_de_w1_13 = _mm_loadh_pd(v_de_w1_13, &dE_W1[i][j+13]);
+                    v_de_w1_15 = _mm_loadl_pd(xxx, &dE_W1[i][j+14]);
+                    v_de_w1_15 = _mm_loadh_pd(v_de_w1_15, &dE_W1[i][j+15]);
+                    
+            
+                    v_de_w1_13 = _mm_mul_pd(v_rate, v_de_w1_13);
+                    v_w1_13 = _mm_sub_pd(v_w1_13, v_de_w1_13);
+                    
+                    v_de_w1_15 = _mm_mul_pd(v_rate, v_de_w1_15);
+                    v_w1_15 = _mm_sub_pd(v_w1_15, v_de_w1_15);
+                            
+                            
+                    _mm_storel_pd(&W1[i][j+12], v_w1_13);
+                    _mm_storeh_pd(&W1[i][j+13], v_w1_13);
+                    _mm_storel_pd(&W1[i][j+14], v_w1_15);
+                    _mm_storeh_pd(&W1[i][j+15], v_w1_15);
+                
+                    v_w1_17 = _mm_loadl_pd(xxx, &W1[i][j+16]);
+                    v_w1_17 = _mm_loadh_pd(v_w1_17, &W1[i][j+17]);
+                    v_w1_19 = _mm_loadl_pd(xxx, &W1[i][j+18]);
+                    v_w1_19 = _mm_loadh_pd(v_w1_19, &W1[i][j+19]);
+
+                    v_de_w1_17 = _mm_loadl_pd(xxx, &dE_W1[i][j+16]);
+                    v_de_w1_17 = _mm_loadh_pd(v_de_w1_17, &dE_W1[i][j+17]);
+                    v_de_w1_19 = _mm_loadl_pd(xxx, &dE_W1[i][j+18]);
+                    v_de_w1_19 = _mm_loadh_pd(v_de_w1_19, &dE_W1[i][j+19]);
+                    
+            
+                    v_de_w1_17 = _mm_mul_pd(v_rate, v_de_w1_17);
+                    v_w1_17 = _mm_sub_pd(v_w1_17, v_de_w1_17);
+                    
+                    v_de_w1_19 = _mm_mul_pd(v_rate, v_de_w1_19);
+                    v_w1_19 = _mm_sub_pd(v_w1_19, v_de_w1_19);
+                            
+                            
+                    _mm_storel_pd(&W1[i][j+16], v_w1_17);
+                    _mm_storeh_pd(&W1[i][j+17], v_w1_17);
+                    _mm_storel_pd(&W1[i][j+18], v_w1_19);
+                    _mm_storeh_pd(&W1[i][j+19], v_w1_19);
+
 #endif
                 
 #if NOVECTOR
@@ -878,26 +960,23 @@ double backward(double *O, vector<double> Y)
                     W1[i][j+1] = W1[i][j+1] - rate * dE_W1[i][j+1];
                     W1[i][j+2] = W1[i][j+2] - rate * dE_W1[i][j+2];
                     W1[i][j+3] = W1[i][j+3] - rate * dE_W1[i][j+3];
-                
                     W1[i][j+4] = W1[i][j+4] - rate * dE_W1[i][j+4];
                     W1[i][j+5] = W1[i][j+5] - rate * dE_W1[i][j+5];
                     W1[i][j+6] = W1[i][j+6] - rate * dE_W1[i][j+6];
                     W1[i][j+7] = W1[i][j+7] - rate * dE_W1[i][j+7];
-#endif
                     W1[i][j+8] = W1[i][j+8] - rate * dE_W1[i][j+8];
                     W1[i][j+9] = W1[i][j+9] - rate * dE_W1[i][j+9];
                     W1[i][j+10] = W1[i][j+10] - rate * dE_W1[i][j+10];
                     W1[i][j+11] = W1[i][j+11] - rate * dE_W1[i][j+11];
-                
                     W1[i][j+12] = W1[i][j+12] - rate * dE_W1[i][j+12];
                     W1[i][j+13] = W1[i][j+13] - rate * dE_W1[i][j+13];
                     W1[i][j+14] = W1[i][j+14] - rate * dE_W1[i][j+14];
                     W1[i][j+15] = W1[i][j+15] - rate * dE_W1[i][j+15];
-                
                     W1[i][j+16] = W1[i][j+16] - rate * dE_W1[i][j+16];
                     W1[i][j+17] = W1[i][j+17] - rate * dE_W1[i][j+17];
                     W1[i][j+18] = W1[i][j+18] - rate * dE_W1[i][j+18];
                     W1[i][j+19] = W1[i][j+19] - rate * dE_W1[i][j+19];
+#endif
                 
             }
         }
@@ -964,13 +1043,6 @@ void train(int iter)
 			myfile << asctime(localtime(&t)) << "\n";
 			myfile.flush();
 		}
-		if ( kk % 50000 == 0) {
-			if (rate < 0.01){
-				myfile << "Learning rate changed from " << rate << " to " << rate * (double) constant << "\n";
-				rate = rate * (double) constant;
-				myfile.flush();
-			}
-		}
 	}
 	myfile.close();
 }
@@ -981,7 +1053,7 @@ void test(vector<double> data){
         for (int j = 0; j < data.size(); j++){
                 if (j % 28 == 0)
                     cout << endl;
-                double mm =  (data[j]+10)*127.5;
+                double mm =  (data[j]+1)*127.5;
                 if (mm == 0.0){
                     cout << ".";
                 }
