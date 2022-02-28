@@ -72,13 +72,13 @@ long long int loop_W1 = 0;
 long long int loop_5 = 0;
 long long int loop_deW0 = 0;
 long long int loop_deW1 = 0;
-
+long long int loop_trainTime = 0;
 
 typedef unsigned char uchar;
 vector<vector <double> >  data_X;
 vector<vector <double> >  data_Y;
 
-struct timespec bb, ee;
+struct timespec bb, ee, itbb,itee;
 
 
 
@@ -609,9 +609,108 @@ double backward(double *O, vector<double> Y)
 
 
 	int bk = 20;
+	#if VECTOR
+                __m128d v_ho1;
+                __m128d v_de_hs2_1;
+                __m128d v_de_hs2_3;
+                __m128d v_de_hs2_5;
+                __m128d v_de_hs2_7;
+                __m128d v_de_hs2_9;
+                __m128d v_de_hs2_11;
+                __m128d v_de_hs2_13;
+                __m128d v_de_hs2_15;
+		__m128d v_de_hs2_17;
+                __m128d v_de_hs2_19;
+
+                __m128d xxx;
+        #endif
+	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
 	for (int i=0; i<N1; i+=bk){
 		for (int j = 0; j<N2; j+=bk){
 			for(int ii=i; ii< i+bk; ii++){
+
+ 	#if VECTOR
+                                        v_ho1 = _mm_loadl_pd(xxx, &HO_1[ii]);
+                                        v_ho1 = _mm_loadh_pd(v_ho1, &HO_1[ii]);
+
+                                        v_de_hs2_1 = _mm_loadl_pd(xxx, &dE_HS_2[j+0]);
+                                        v_de_hs2_1 = _mm_loadh_pd(v_de_hs2_1, &dE_HS_2[j+1]);
+
+                                        v_de_hs2_3 = _mm_loadl_pd(xxx, &dE_HS_2[j+2]);
+                                        v_de_hs2_3 = _mm_loadh_pd(v_de_hs2_3, &dE_HS_2[j+3]);
+
+                                        v_de_hs2_5 = _mm_loadl_pd(xxx, &dE_HS_2[j+4]);
+                                        v_de_hs2_5 = _mm_loadh_pd(v_de_hs2_5, &dE_HS_2[j+5]);
+
+                                        v_de_hs2_7 = _mm_loadl_pd(xxx, &dE_HS_2[j+6]);
+                                        v_de_hs2_7 = _mm_loadh_pd(v_de_hs2_7, &dE_HS_2[j+7]);
+
+                                        v_de_hs2_9 = _mm_loadl_pd(xxx, &dE_HS_2[j+8]);
+                                        v_de_hs2_9 = _mm_loadh_pd(v_de_hs2_9, &dE_HS_2[j+9]);
+
+                                        v_de_hs2_11 = _mm_loadl_pd(xxx, &dE_HS_2[j+10]);
+                                        v_de_hs2_11 = _mm_loadh_pd(v_de_hs2_11, &dE_HS_2[j+11]);
+
+                                        v_de_hs2_1 = _mm_mul_pd(v_ho1, v_de_hs2_1);
+                                        v_de_hs2_3 = _mm_mul_pd(v_ho1, v_de_hs2_3);
+                                        v_de_hs2_5 = _mm_mul_pd(v_ho1, v_de_hs2_5);
+                                        v_de_hs2_7 = _mm_mul_pd(v_ho1, v_de_hs2_7);
+                                        v_de_hs2_9 = _mm_mul_pd(v_ho1, v_de_hs2_9);
+                                        v_de_hs2_11 = _mm_mul_pd(v_ho1, v_de_hs2_11);
+
+                                        _mm_storel_pd(&dE_W1[ii][j+0], v_de_hs2_1);
+                                        _mm_storeh_pd(&dE_W1[ii][j+1], v_de_hs2_1);
+
+                                        _mm_storel_pd(&dE_W1[ii][j+2], v_de_hs2_3);
+                                        _mm_storeh_pd(&dE_W1[ii][j+3], v_de_hs2_3);
+
+                                        _mm_storel_pd(&dE_W1[ii][j+4], v_de_hs2_5);
+                                        _mm_storeh_pd(&dE_W1[ii][j+5], v_de_hs2_5);
+
+                                        _mm_storel_pd(&dE_W1[ii][j+6], v_de_hs2_7);
+                                        _mm_storeh_pd(&dE_W1[ii][j+7], v_de_hs2_7);
+
+                                        _mm_storel_pd(&dE_W1[ii][j+8], v_de_hs2_9);
+                                        _mm_storeh_pd(&dE_W1[ii][j+9], v_de_hs2_9);
+
+                                        _mm_storel_pd(&dE_W1[ii][j+10], v_de_hs2_11);
+                                        _mm_storeh_pd(&dE_W1[ii][j+11], v_de_hs2_11);
+
+			
+                                        v_de_hs2_13 = _mm_loadl_pd(xxx, &dE_HS_2[j+12]);
+                                        v_de_hs2_13 = _mm_loadh_pd(v_de_hs2_1, &dE_HS_2[j+13]);
+
+                                        v_de_hs2_15 = _mm_loadl_pd(xxx, &dE_HS_2[j+14]);
+                                        v_de_hs2_15 = _mm_loadh_pd(v_de_hs2_3, &dE_HS_2[j+15]);
+
+                                        v_de_hs2_17 = _mm_loadl_pd(xxx, &dE_HS_2[j+16]);
+                                        v_de_hs2_17 = _mm_loadh_pd(v_de_hs2_5, &dE_HS_2[j+17]);
+
+                                        v_de_hs2_19 = _mm_loadl_pd(xxx, &dE_HS_2[j+18]);
+                                        v_de_hs2_19 = _mm_loadh_pd(v_de_hs2_7, &dE_HS_2[j+19]);
+
+
+                                        v_de_hs2_13 = _mm_mul_pd(v_ho1, v_de_hs2_13);
+                                        v_de_hs2_15 = _mm_mul_pd(v_ho1, v_de_hs2_15);
+                                        v_de_hs2_17 = _mm_mul_pd(v_ho1, v_de_hs2_17);
+                                        v_de_hs2_19 = _mm_mul_pd(v_ho1, v_de_hs2_19);
+
+                                        _mm_storel_pd(&dE_W1[ii][j+12], v_de_hs2_13);
+                                        _mm_storeh_pd(&dE_W1[ii][j+13], v_de_hs2_13);
+
+                                        _mm_storel_pd(&dE_W1[ii][j+14], v_de_hs2_15);
+                                        _mm_storeh_pd(&dE_W1[ii][j+15], v_de_hs2_15);
+
+                                        _mm_storel_pd(&dE_W1[ii][j+16], v_de_hs2_17);
+                                        _mm_storeh_pd(&dE_W1[ii][j+17], v_de_hs2_17);
+
+                                        _mm_storel_pd(&dE_W1[ii][j+18], v_de_hs2_19);
+                                        _mm_storeh_pd(&dE_W1[ii][j+19], v_de_hs2_19);
+
+
+        #endif
+
+	#if NOVECTOR
 				dE_W1[ii][j+0] = dE_HS_2[j+0]*HO_1[ii];
 				dE_W1[ii][j+1] = dE_HS_2[j+1]*HO_1[ii];
 				dE_W1[ii][j+2] = dE_HS_2[j+2]*HO_1[ii];
@@ -635,10 +734,13 @@ double backward(double *O, vector<double> Y)
                 dE_W1[ii][j+17] = dE_HS_2[j+17]*HO_1[ii];
                 dE_W1[ii][j+18] = dE_HS_2[j+18]*HO_1[ii];
                 dE_W1[ii][j+19] = dE_HS_2[j+19]*HO_1[ii];
-
+	#endif
 			}
 		}
 	}
+
+	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
+        loop_deW1 += print_duration(&bb, &ee);
 
 	// compute dE_HO_1
 	double temp_dE_HO_1;
@@ -696,7 +798,6 @@ double backward(double *O, vector<double> Y)
 		__m128d v_de_hs1_13;
 		__m128d v_de_hs1_15;
 
-        	__m128d xxx;
 	#endif
 	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
 	for (int i=0; i<N0; i+=bk){
@@ -798,7 +899,7 @@ double backward(double *O, vector<double> Y)
     // update W0, W1, W2, B1, B2, B3;
 	bk=8;
 	{
-#if VECTOR
+#if 0
         __m128d v_rate;
         __m128d v_de_w0_1;
         __m128d v_w0_1;
@@ -814,7 +915,7 @@ double backward(double *O, vector<double> Y)
         for (int i=0; i<N0; i+=bk)
             for (int j=0; j<N1; j+=bk)
                 for(int ii=i; ii< i+bk; ii++){
-#if VECTOR
+#if 0
                     v_rate = _mm_loadl_pd(xxx, &rate);
                     v_rate = _mm_loadh_pd(v_rate, &rate);
         
@@ -867,7 +968,7 @@ double backward(double *O, vector<double> Y)
 
 #endif
 
-#if NOVECTOR
+#if 1
                     W0[ii][j+0] = W0[ii][j+0] - rate * dE_W0[ii][j+0];
                     W0[ii][j+1] = W0[ii][j+1] - rate * dE_W0[ii][j+1];
                     W0[ii][j+2] = W0[ii][j+2] - rate * dE_W0[ii][j+2];
@@ -916,7 +1017,7 @@ double backward(double *O, vector<double> Y)
         double temp_w1;
         for (int i=0; i<N1; i++){
             for (int j=0; j<N2; j+=bk){
-#if VECTOR              
+#if 0              
                     v_rate = _mm_loadl_pd(xxx, &rate);
                     v_rate = _mm_loadh_pd(v_rate, &rate);
         
@@ -1039,7 +1140,7 @@ double backward(double *O, vector<double> Y)
 
 #endif
                 
-#if NOVECTOR
+#if 1
                     W1[i][j+0] = W1[i][j+0] - rate * dE_W1[i][j+0];
                     W1[i][j+1] = W1[i][j+1] - rate * dE_W1[i][j+1];
                     W1[i][j+2] = W1[i][j+2] - rate * dE_W1[i][j+2];
@@ -1190,17 +1291,24 @@ int main(int argc, char *argv[])
 			W2[i][j] = distribution(generator);		
 	cout << "WEIGHT DISTRIBUTION COMPLETE" << endl;	
 
-	if (argc == 2) train(atoi(argv[1]));
+	if (argc == 2){
+		clock_gettime(CLOCK_THREAD_CPUTIME_ID, &itbb);
+		train(atoi(argv[1]));
+		clock_gettime(CLOCK_THREAD_CPUTIME_ID, &itee);
+        	loop_trainTime += print_duration(&itbb, &itee);
+	}
         else train(700000);
 
 	/* For Testing */
 	int m = 4;
         test(data_X[m]);
 
- 	cout << "Loop HS_1 : " << (double)loop_HS_1/atoi(argv[1]) << endl;
- 	cout << "Loop HS_2 : " << (double)loop_HS_2/atoi(argv[1]) << endl;
- 	cout << "Loop W0 : " << (double)loop_W0/atoi(argv[1]) << endl;
-    	cout << "Loop W1 : " << (double)loop_W1/atoi(argv[1]) << endl;
-	cout << "Loop deW0 : " << (double)loop_deW0/atoi(argv[1]) << endl;
+ 	cout << "Loop HS_1: " << (double)loop_HS_1/atoi(argv[1]) << endl;
+ 	cout << "Loop HS_2: " << (double)loop_HS_2/atoi(argv[1]) << endl;
+ 	cout << "Loop W0:" << (double)loop_W0/atoi(argv[1]) << endl;
+    	cout << "Loop W1: " << (double)loop_W1/atoi(argv[1]) << endl;
+	cout << "Loop deW0: " << (double)loop_deW0/atoi(argv[1]) << endl;
+	cout << "Loop deW1: " << (double)loop_deW1/atoi(argv[1]) << endl;
+	cout << "Loop whole training time: " << (double)loop_trainTime/atoi(argv[1]) << endl;
 
 }
