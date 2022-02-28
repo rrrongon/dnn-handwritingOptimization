@@ -32,7 +32,7 @@ long long int print_duration(struct timespec *b, struct timespec *c)
 {
 	long long r = c->tv_nsec - b->tv_nsec;
         r += ((long long)(c->tv_sec - b->tv_sec) ) * 1000000000;
-	printf("duration = %lld nanoseconds\n", r);
+//	printf("duration = %lld nanoseconds\n", r);
 	return r;
 }
 
@@ -989,7 +989,7 @@ double backward(double *O, vector<double> Y)
 
 	bk=20;
     {
-#if VECTOR
+#if 0
         __m128d v_rate;
         __m128d v_de_w1_1;
         __m128d v_w1_1;
