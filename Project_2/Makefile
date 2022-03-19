@@ -1,13 +1,10 @@
 CC=gcc
 CFLAGS=-I.
-CXX = g++
-CXXFLAGS = -O3 -msse2 --std=c++11 -Wall
+CXX =g++
+CXXFLAGS = -fopenmp -O3 -msse2 -std=c++11 -Wall
 
-%.o: %.cpp 
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-
-project2.x: project2.o
-	$(CXX) -o project2.x project2.o
+run:
+	$(CXX) $< $(CXXFLAGS) project2.cpp -o project2.x
 
 clean:
 	rm -rf *.o *.x
