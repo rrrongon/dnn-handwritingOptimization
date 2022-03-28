@@ -19,8 +19,8 @@
 #include <stdexcept>
 #include <chrono>
 #include <emmintrin.h>
-#include<time.h>
-#include<stdio.h>
+#include <time.h>
+#include <stdio.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
@@ -32,7 +32,6 @@ long long int print_duration(struct timespec *b, struct timespec *c)
 {
 	long long r = c->tv_nsec - b->tv_nsec;
         r += ((long long)(c->tv_sec - b->tv_sec) ) * 1000000000;
-//	printf("duration = %lld nanoseconds\n", r);
 	return r;
 }
 
@@ -77,7 +76,7 @@ long long int loop_trainTime = 0;
 typedef unsigned char uchar;
 vector<vector <double> >  data_X;
 vector<vector <double> >  data_Y;
-
+vector<int> data_pos;
 struct timespec bb, ee, itbb,itee;
 
 
@@ -205,9 +204,17 @@ void read_mnist_labels(string full_path, int& number_of_labels) {
             file.read((char*)&_dataset[i], 1);
         }
 	for (int ii = 0; ii < number_of_labels; ii++){
- 		vector<double> temp(10, -1.715);
-		temp[(int)_dataset[ii]] = 1.715;
-		data_Y.push_back(temp);
+		int digit =  (int)_dataset[ii];
+		if(digit < N3){
+ 			vector<double> temp(N3, -1.7159);
+			temp[(int)_dataset[ii]] = 1.7159;
+			data_Y.push_back(temp);
+			data_pos.push_back(ii);
+		}
+		else{
+ 			vector<double> temp(N3, -1.7159);
+			data_Y.push_back(temp);
+		}
 	} 
     } else {
         throw runtime_error("Unable to open file `" + full_path + "`!");
@@ -1224,35 +1231,29 @@ void train(int iter)
 	int ii,jj;
 	int i = 0;
         double constant = 1.5;
+	int index;
 	for (int kk = 0; kk < iter; kk++) {
-		
-		ii = kk % data_X.size();
-		forward(data_X[ii]);
-		backward(OO, data_Y[ii]);
-	        
-
-		if (kk % 10000 == 0) {
-
+		//ii = kk % data_X.size();
+		index = kk % data_pos.size();
+		forward(data_X[data_pos[index]]);
+		backward(OO, data_Y[data_pos[index]]);
+		if (kk % 1 == 0) {
 			int winner = 0;
 			double max = OO[0];
-
 			for (int i = 0; i < N3; i++){
-				if (data_Y[ii][i] ) {
+				if (data_Y[data_pos[index]][i] == 1.7159) {
 					jj = i;
 				}
 			}
 			for (int i = 0; i < N3; i++){
-				if (OO[i] > max) {
-					max = OO[i];
+				if (OO[i] > 0) {
 					winner = i;
 				}
 			} 
-
 			myfile << "[Train] Iter " << kk << ": err =" << err << ", Y = " << jj <<"\n";			
 			for (int i = 0; i < N3; i++)
 				myfile << "OO[" <<i<< "] = " << OO[i] << "\n";
 			
-			myfile << "Max OO["<<winner<<"] VS " << "Y = " << jj<<"\n";
 			time (&t);
 			myfile << asctime(localtime(&t)) << "\n";
 			myfile.flush();
@@ -1261,27 +1262,48 @@ void train(int iter)
 	myfile.close();
 }
 
-void test(vector<double> data){
-        forward(data);
-#if DEBUG
-        for (int j = 0; j < data.size(); j++){
-                if (j % 28 == 0)
-                    cout << endl;
-                double mm =  (data[j]+1)*127.5;
-                if (mm == 0.0){
-                    cout << ".";
-                }
-                else{
-                    cout << "@";
-                }
-            }
-        cout << endl;
-            for (int i = 0; i < 10; i++){
-            cout << OO[i] << "\t";
-        }
-        cout << endl;
-#endif
+void test(){
+	ofstream myfile;
+	myfile.open ("test.txt");
+	vector<int> correct (N3, 0);
+	vector<int> incorrect (N3, 0);
+	int iter = 100;
+    	int count = 0;
+	int jj = 0, winner = 0;
+	for (int kk = 0; kk < iter; kk++) {
+		int index = kk % data_pos.size();
+		forward(data_X[data_pos[index]]);
+		for (int i = 0; i < N3; i++){
+			if (data_Y[data_pos[index]][i] == 1.7159) {
+				jj = i;
+			}
+		}
+		for (int i = 0; i < N3; i++){
+			if (OO[i] > 0) {
+				winner = i;
+				count++;
+			}
+		} 
+		if (winner == jj && count == 1){
+			correct[jj]++;
+		}else{
+			incorrect[jj]++;
+		}
+		count = 0;
+	}
+	
+	for (int i = 0; i < N3; i++){
+		double total = 0;
+		double accuracy = 0.0;
+		total = correct[i] + incorrect[i];
+		if (total != 0){
+			accuracy = (double) correct[i] / total;
+		}
+		myfile << "Total : " << total << " Correct : " << correct[i] << " Accuracy of " << i << " is : " << accuracy*100 << "%" << endl;
+	}
+	myfile.close();
 } 
+
 
 int main(int argc, char *argv[]) 
 {
@@ -1330,7 +1352,7 @@ int main(int argc, char *argv[])
 
 	/* For Testing */
 	int m = 4;
-        test(data_X[m]);
+        test();
 
  	cout << "Loop HS_1: " << (double)loop_HS_1/atoi(argv[1]) << endl;
  	cout << "Loop HS_2: " << (double)loop_HS_2/atoi(argv[1]) << endl;
