@@ -49,6 +49,9 @@ long long int print_duration(struct timespec *b, struct timespec *c)
 #define NOVECTOR 1
 #define VECTOR 0
 
+#define OMP_P 1
+#define NO_OMP 0
+ 
 double IN[N0]; // Input Layer
 double W0[N0][N1]; //Input to hidden layer1
 double B1[N1]; 
@@ -346,6 +349,10 @@ void forward(vector<double> input)
         bk = 20;
         clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
 	int i,j,jj;
+	#if NO_OMP
+                #pragma omp parallel
+                #pragma omp for private(jj)
+        #endif
         for (j=0; j<N1; j+=bk) {
             for (i=0; i<N2; i+=bk){
                 for (jj=j;jj<j+bk;jj++){
@@ -482,7 +489,6 @@ void forward(vector<double> input)
 			}
 		}
 
-		#pragma omp barrier
 		clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
 		loop_HS_2 += print_duration(&bb, &ee);
     
@@ -568,13 +574,15 @@ double backward(double *O, vector<double> Y)
 	double A = 1.7159;
 	double B = 0.6666;
 	err = 0.0;
+	
+	int i,j,k,ii,jj,kk;
 
-    for (int i=0; i<N3; i++)
+    for (i=0; i<N3; i++)
 		err += (O[i] - Y[i])*(O[i]-Y[i]);
 	err = err / N3;
 
 	double temp_OOi;
-    for (int i=0; i<N3; i++){
+    for (i=0; i<N3; i++){
     /*
     *        OO[i] = AtanH(Bx)
     * 		A * B (1 - (tanh(Bx) * tanh(Bx)))
@@ -632,9 +640,10 @@ double backward(double *O, vector<double> Y)
         #endif
 	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
 	
-	int i,j,ii;
-	#pragma omp parallel
-        #pragma omp for private(j,ii)
+	#if NO_OMP
+		#pragma omp parallel
+        	#pragma omp for private(j,ii)
+	#endif
 	for (i=0; i<N1; i+=bk){
 		for (j = 0; j<N2; j+=bk){
 			for(ii=i; ii< i+bk; ii++){
@@ -755,9 +764,9 @@ double backward(double *O, vector<double> Y)
 	// compute dE_HO_1
 	double temp_dE_HO_1;
     bk=20;
-	for (int i=0; i<N1; i++) {
+	for (i=0; i<N1; i++) {
 		temp_dE_HO_1=0.0;
-		for (int j = 0; j<N2; j+=bk){
+		for (j = 0; j<N2; j+=bk){
 				
 				temp_dE_HO_1 += dE_HS_2[j+0]*W1[i][j+0];
 				temp_dE_HO_1 += dE_HS_2[j+1]*W1[i][j+1];
@@ -785,15 +794,15 @@ double backward(double *O, vector<double> Y)
 	}
 
         // compute dHO_HS_1 = HO_1 dot (1-HO_1)
-        for (int i=0; i<N1; i++)
+        for (i=0; i<N1; i++)
 		dHO_HS_1[i] = B * (A - (HO_1[i] * HO_1[i] / A));
 
         // compute dE_HS_1 = dE_HO_1 dot dHO_HS_1
-        for (int i=0; i<N1; i++)
+        for (i=0; i<N1; i++)
 		dE_HS_1[i] = dE_HO_1[i] * dHO_HS_1[i];
 
         // compute dE_B1 = dE_HS_1
-        for (int i=0; i<N1; i++)
+        for (i=0; i<N1; i++)
 		dE_B1[i] = dE_HS_1[i];
         
 	bk = 16;
@@ -811,8 +820,10 @@ double backward(double *O, vector<double> Y)
 	#endif
 
 	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
-	#pragma omp parallel
-        #pragma omp for private(j,ii) 
+	#if OMP_P
+                #pragma omp parallel
+                #pragma omp for private(j,ii) 
+        #endif
 	for (i=0; i<N0; i+=bk){
 			for (j = 0; j<N1; j+=bk){
 				for(ii=i; ii<i+bk; ii++){
@@ -925,12 +936,14 @@ double backward(double *O, vector<double> Y)
         __m128d xxx;
 #endif
         clock_gettime(CLOCK_THREAD_CPUTIME_ID, &bb);
-	int i,j,ii;
-	#pragma omp parallel
-        #pragma omp for private(ii)
-        for (int i=0; i<N0; i+=bk)
-            for (int j=0; j<N1; j+=bk){
-                for(int ii=i; ii< i+bk; ii++){
+
+        #if OMP_P
+		#pragma omp parallel
+        	#pragma omp for private(ii)
+	#endif
+        for (i=0; i<N0; i+=bk)
+            for (j=0; j<N1; j+=bk){
+                for(ii=i; ii< i+bk; ii++){
 #if 0
                     v_rate = _mm_loadl_pd(xxx, &rate);
                     v_rate = _mm_loadh_pd(v_rate, &rate);
@@ -1000,7 +1013,7 @@ double backward(double *O, vector<double> Y)
         loop_W0 += print_duration(&bb, &ee);
 	}
 
-	for (int i=0; i<N1; i++)
+	for (i=0; i<N1; i++)
 		B1[i] = B1[i] - rate * dE_B1[i];
 
 
@@ -1034,8 +1047,10 @@ double backward(double *O, vector<double> Y)
         double temp_w1;
 
 	int i,j;
-        #pragma omp parallel
-	#pragma omp for private(i)
+	# if OMP_P
+        	#pragma omp parallel
+		#pragma omp for private(i)
+	#endif
         for (i=0; i<N1; i++){
             for (j=0; j<N2; j+=bk){
 #if 0              
@@ -1187,24 +1202,21 @@ double backward(double *O, vector<double> Y)
             }
         }
 	
-	#pragma omp barrier
-
         clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
         loop_W1 += print_duration(&bb, &ee);
 	
     }
 
-	#pragma omp parallel
-        #pragma omp for private(i)
 	for (i=0; i<N2; i++)
 		B2[i] = B2[i] - rate * dE_B2[i];
 
-	#pragma omp parallel
-        #pragma omp for private(i)
+	#if OMP_P
+		#pragma omp parallel
+	        #pragma omp for private(i)
+	#endif
 	for (i=0; i<N2; i++)
 		for (int j=0; j<N3; j++)
 			W2[i][j] = W2[i][j] - rate * dE_W2[i][j];
-
 	for (int i=0; i<N3; i++)
 		B3[i] = B3[i] - rate * dE_B3[i];
 
