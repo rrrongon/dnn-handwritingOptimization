@@ -239,7 +239,7 @@ void forward(vector<double> input)
 
 	int bk = 8; //blocking
 	{
-#if VECTOR
+#if 1
         __m128d V_IN;
         __m128d V_W0_1;
         __m128d V_HS_1_1;
@@ -254,7 +254,7 @@ void forward(vector<double> input)
         for (int j=0; j<N0; j+=bk){ //loop interchange
             for (int i=0; i<N1; i+=bk){
                 for (jj=j;jj<j+bk;jj++){
-#if VECTOR	
+#if 1	
                     V_IN = _mm_loadl_pd(xxx, &IN[jj]);
                     V_IN = _mm_loadh_pd(V_IN, &IN[jj]);
         
@@ -305,7 +305,7 @@ void forward(vector<double> input)
 
 #endif
 
-#if NOVECTOR	
+#if 0	
                     HS_1[i+0] += IN[jj]*W0[jj][i+0];
                     HS_1[i+1] += IN[jj]*W0[jj][i+1];
                     HS_1[i+2] += IN[jj]*W0[jj][i+2];
@@ -331,7 +331,7 @@ void forward(vector<double> input)
 		HS_2[i] = B2[i];
 	}
     {
-#if VECTOR
+#if 1
         __m128d V_HO_1;
         __m128d V_W1_1;
         __m128d V_HS_2_1;
@@ -363,7 +363,7 @@ void forward(vector<double> input)
         for (j=0; j<N1; j+=bk) {
             for (i=0; i<N2; i+=bk){
                 for (jj=j;jj<j+bk;jj++){
-#if VECTOR	   
+#if 1	   
                     V_HO_1 = _mm_loadl_pd(xxx, &HO_1[jj]);
                     V_HO_1 = _mm_loadh_pd(V_HO_1, &HO_1[jj]);
 
@@ -469,7 +469,7 @@ void forward(vector<double> input)
 	
 #endif
 
-#if NOVECTOR
+#if 0
 					HS_2[i+0] += HO_1[jj]* W1[jj][i+0];
                     HS_2[i+1] += HO_1[jj]* W1[jj][i+1];
                     HS_2[i+2] += HO_1[jj]* W1[jj][i+2];
@@ -488,9 +488,10 @@ void forward(vector<double> input)
                     HS_2[i+15] += HO_1[jj]* W1[jj][i+15];
                     HS_2[i+16] += HO_1[jj]* W1[jj][i+16];
                     HS_2[i+17] += HO_1[jj]* W1[jj][i+17];
-#endif
 					HS_2[i+18] += HO_1[jj]* W1[jj][i+18];
 					HS_2[i+19] += HO_1[jj]* W1[jj][i+19];
+
+#endif
 				}
 				
 			}
