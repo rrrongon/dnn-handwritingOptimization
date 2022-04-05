@@ -488,10 +488,10 @@ void forward(vector<double> input)
                     HS_2[i+15] += HO_1[jj]* W1[jj][i+15];
                     HS_2[i+16] += HO_1[jj]* W1[jj][i+16];
                     HS_2[i+17] += HO_1[jj]* W1[jj][i+17];
+#endif
 					HS_2[i+18] += HO_1[jj]* W1[jj][i+18];
 					HS_2[i+19] += HO_1[jj]* W1[jj][i+19];
 
-#endif
 				}
 				
 			}
