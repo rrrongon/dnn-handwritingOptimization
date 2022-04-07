@@ -48,8 +48,6 @@ long long int print_duration(struct timespec *b, struct timespec *c)
 #define NOVECTOR 1
 #define VECTOR 0
 
-#define OMP_P 1
-#define NO_OMP 0
  
 double IN[N0]; // Input Layer
 double W0[N0][N1]; //Input to hidden layer1
@@ -356,10 +354,6 @@ void forward(vector<double> input)
         bk = 20;
         clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
 	int i,j,jj;
-	#if NO_OMP
-                #pragma omp parallel
-                #pragma omp for private(jj)
-        #endif
         for (j=0; j<N1; j+=bk) {
             for (i=0; i<N2; i+=bk){
                 for (jj=j;jj<j+bk;jj++){
@@ -648,10 +642,6 @@ double backward(double *O, vector<double> Y)
         #endif
 	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
 	
-	#if NO_OMP
-		#pragma omp parallel
-        	#pragma omp for private(j,ii)
-	#endif
 	for (i=0; i<N1; i+=bk){
 		for (j = 0; j<N2; j+=bk){
 			for(ii=i; ii< i+bk; ii++){
@@ -828,10 +818,6 @@ double backward(double *O, vector<double> Y)
 	#endif
 
 	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ee);
-	#if OMP_P
-                #pragma omp parallel
-                #pragma omp for private(j,ii) 
-        #endif
 	for (i=0; i<N0; i+=bk){
 			for (j = 0; j<N1; j+=bk){
 				for(ii=i; ii<i+bk; ii++){
@@ -931,7 +917,7 @@ double backward(double *O, vector<double> Y)
     // update W0, W1, W2, B1, B2, B3;
 	bk=8;
 	{
-#if 0
+#if 1
         __m128d v_rate;
         __m128d v_de_w0_1;
         __m128d v_w0_1;
@@ -945,14 +931,10 @@ double backward(double *O, vector<double> Y)
 #endif
         clock_gettime(CLOCK_THREAD_CPUTIME_ID, &bb);
 
-        #if OMP_P
-		#pragma omp parallel
-        	#pragma omp for private(ii)
-	#endif
         for (i=0; i<N0; i+=bk)
             for (j=0; j<N1; j+=bk){
                 for(ii=i; ii< i+bk; ii++){
-#if 0
+#if 1
                     v_rate = _mm_loadl_pd(xxx, &rate);
                     v_rate = _mm_loadh_pd(v_rate, &rate);
         
@@ -1005,7 +987,7 @@ double backward(double *O, vector<double> Y)
 
 #endif
 
-#if 1
+#if 0
                     W0[ii][j+0] = W0[ii][j+0] - rate * dE_W0[ii][j+0];
                     W0[ii][j+1] = W0[ii][j+1] - rate * dE_W0[ii][j+1];
                     W0[ii][j+2] = W0[ii][j+2] - rate * dE_W0[ii][j+2];
@@ -1027,7 +1009,7 @@ double backward(double *O, vector<double> Y)
 
 	bk=20;
     {
-#if 0
+#if 1
         __m128d v_rate;
         __m128d v_de_w1_1;
         __m128d v_w1_1;
@@ -1061,7 +1043,7 @@ double backward(double *O, vector<double> Y)
 	#endif
         for (i=0; i<N1; i++){
             for (j=0; j<N2; j+=bk){
-#if 0              
+#if 1              
                     v_rate = _mm_loadl_pd(xxx, &rate);
                     v_rate = _mm_loadh_pd(v_rate, &rate);
         
@@ -1184,7 +1166,7 @@ double backward(double *O, vector<double> Y)
 
 #endif
                 
-#if 1
+#if 0
                     W1[i][j+0] = W1[i][j+0] - rate * dE_W1[i][j+0];
                     W1[i][j+1] = W1[i][j+1] - rate * dE_W1[i][j+1];
                     W1[i][j+2] = W1[i][j+2] - rate * dE_W1[i][j+2];
@@ -1218,10 +1200,6 @@ double backward(double *O, vector<double> Y)
 	for (i=0; i<N2; i++)
 		B2[i] = B2[i] - rate * dE_B2[i];
 
-	#if OMP_P
-		#pragma omp parallel
-	        #pragma omp for private(i)
-	#endif
 	for (i=0; i<N2; i++)
 		for (int j=0; j<N3; j++)
 			W2[i][j] = W2[i][j] - rate * dE_W2[i][j];
@@ -1234,23 +1212,26 @@ double backward(double *O, vector<double> Y)
 
 void train(int iter)
 {
+
 	
-	time_t t; // t passed as argument in function time()
-   	struct tm * tt; // decalring variable for localtime()
-   	time (&t); //passing argument to time()
-   	tt = localtime(&t);
-	ofstream myfile;
-	myfile.open ("output.txt");
+		time_t t; // t passed as argument in function time()
+   		struct tm * tt; // decalring variable for localtime()
+   		time (&t); //passing argument to time()
+   		tt = localtime(&t);
+		ofstream myfile;
+		myfile.open ("output.txt");
+
 	int ii,jj;
 	int i = 0;
         double constant = 1.5;
 	int index;
+
 	for (int kk = 0; kk < iter; kk++) {
 		//ii = kk % data_X.size();
 		index = kk % data_pos.size();
 		forward(data_X[data_pos[index]]);
 		backward(OO, data_Y[data_pos[index]]);
-		if (kk % 1 == 0) {
+		if (kk % 10 == 0) {
 			int winner = 0;
 			double max = OO[0];
 			for (int i = 0; i < N3; i++){
@@ -1280,7 +1261,7 @@ void test(){
 	myfile.open ("test.txt");
 	vector<int> correct (N3, 0);
 	vector<int> incorrect (N3, 0);
-	int iter = 100;
+	int iter = 1000;
     	int count = 0;
 	int jj = 0, winner = 0;
 	for (int kk = 0; kk < iter; kk++) {
@@ -1321,48 +1302,46 @@ void test(){
 int main(int argc, char *argv[]) 
 {
 
-
-	int number_of_images = 0, size = 0;
-	read_mnist_images("./data/train_data/input/train-images-idx3-ubyte", number_of_images, size);
-	cout << "IMAGE READ COMPLETE" << endl;	
+		int number_of_images = 0, size = 0;
+		read_mnist_images("./data/train_data/input/train-images-idx3-ubyte", number_of_images, size);
+		cout << "IMAGE READ COMPLETE" << endl;	
 	
 
-	int number_of_labels = 0;
-	read_mnist_labels("./data/train_data/output/train-labels-idx1-ubyte", number_of_labels);
-	cout << "LABEL READ COMPLETE" << endl;
+		int number_of_labels = 0;
+		read_mnist_labels("./data/train_data/output/train-labels-idx1-ubyte", number_of_labels);
+		cout << "LABEL READ COMPLETE" << endl;
 	
-	// randomize weights
-	int seed = 30;
-	default_random_engine generator(seed); // rd() provides a random seed
-	uniform_real_distribution<double> distribution(-0.05, 0.05);
+		// randomize weights
+		int seed = 30;
+		default_random_engine generator(seed); // rd() provides a random seed
+		uniform_real_distribution<double> distribution(-0.05, 0.05);
         
-	for (int i = 0; i<N1; i++)
-		B1[i] = distribution(generator);
-        for (int i = 0; i<N0; i++)
-		for (int j = 0; j<N1; j++)
-			W0[i][j] = distribution(generator);
+		for (int i = 0; i<N1; i++)
+			B1[i] = distribution(generator);
+        	for (int i = 0; i<N0; i++)
+			for (int j = 0; j<N1; j++)
+				W0[i][j] = distribution(generator);
         
-	for (int i = 0; i<N2; i++)
-		B2[i] = distribution(generator);
-        for (int i = 0; i<N1; i++)
-		for (int j = 0; j<N2; j++)
-			W1[i][j] = distribution(generator);		
+		for (int i = 0; i<N2; i++)
+			B2[i] = distribution(generator);
+        	for (int i = 0; i<N1; i++)
+			for (int j = 0; j<N2; j++)
+				W1[i][j] = distribution(generator);		
         
-	for (int i = 0; i<N3; i++)
-		B3[i] = distribution(generator);
-        for (int i = 0; i<N2; i++)
-		for (int j = 0; j<N3; j++)
+		for (int i = 0; i<N3; i++)
+			B3[i] = distribution(generator);
+        	for (int i = 0; i<N2; i++)
+			for (int j = 0; j<N3; j++)
 			W2[i][j] = distribution(generator);		
-	cout << "WEIGHT DISTRIBUTION COMPLETE" << endl;	
+		cout << "WEIGHT DISTRIBUTION COMPLETE" << endl;	
 
-	if (argc == 2){
-		clock_gettime(CLOCK_THREAD_CPUTIME_ID, &itbb);
-		train(atoi(argv[1]));
-		clock_gettime(CLOCK_THREAD_CPUTIME_ID, &itee);
-        	loop_trainTime += print_duration(&itbb, &itee);
-	}
-        else train(700000);
-
+		if (argc == 2){
+			clock_gettime(CLOCK_THREAD_CPUTIME_ID, &itbb);
+			train(atoi(argv[1]));
+			clock_gettime(CLOCK_THREAD_CPUTIME_ID, &itee);
+        		loop_trainTime += print_duration(&itbb, &itee);
+		}else
+			train(700000);
 	/* For Testing */
 	int m = 4;
         test();
@@ -1374,5 +1353,7 @@ int main(int argc, char *argv[])
 	cout << "Loop deW0: " << (double)loop_deW0/atoi(argv[1]) << endl;
 	cout << "Loop deW1: " << (double)loop_deW1/atoi(argv[1]) << endl;
 	cout << "Loop whole training time: " << (double)loop_trainTime/atoi(argv[1]) << endl;
+
+	return 0;
 
 }

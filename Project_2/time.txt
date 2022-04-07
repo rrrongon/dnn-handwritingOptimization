@@ -1,0 +1,7 @@
+Loop HS_1: 543017
+Loop HS_2: 959227
+Loop W0:951152
+Loop W1: 433070
+Loop deW0: 2.46991e+06
+Loop deW1: 1.35564e+06
+Loop whole training time: 3.86891e+06

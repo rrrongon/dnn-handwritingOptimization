@@ -1,0 +1,10 @@
+Total : 97 Correct : 93 Accuracy of 0 is : 95.8763%
+Total : 116 Correct : 111 Accuracy of 1 is : 95.6897%
+Total : 99 Correct : 73 Accuracy of 2 is : 73.7374%
+Total : 93 Correct : 76 Accuracy of 3 is : 81.7204%
+Total : 105 Correct : 91 Accuracy of 4 is : 86.6667%
+Total : 92 Correct : 59 Accuracy of 5 is : 64.1304%
+Total : 94 Correct : 83 Accuracy of 6 is : 88.2979%
+Total : 117 Correct : 98 Accuracy of 7 is : 83.7607%
+Total : 87 Correct : 63 Accuracy of 8 is : 72.4138%
+Total : 100 Correct : 81 Accuracy of 9 is : 81%
