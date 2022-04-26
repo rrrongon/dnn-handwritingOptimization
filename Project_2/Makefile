@@ -1,10 +1,20 @@
-CC=gcc
+CC=mpicc
 CFLAGS=-I.
-CXX =g++
-CXXFLAGS = -fopenmp -O3 -msse2 -std=c++11 -Wall
+CXX=mpicxx
+CXXFLAGS = -msse2 -std=c++11 -Wall
 
-run:
-	$(CXX) $< $(CXXFLAGS) project2.cpp -o project2.x
+
+project4.x:
+	$(CXX) $< $(CXXFLAGS) project4.cpp -o project4.x
 
 clean:
 	rm -rf *.o *.x
+
+cleantxt:
+	rm -rf *.txt
+
+test_mpi:
+	mpirun -n 4 project4.x 10 train_mpi.txt test_mpi.txt > prob_16.txt
+test_non_mpi:
+	mpirun -n 1 project4.x 10 train.txt test.txt > prob_1.txt
+
